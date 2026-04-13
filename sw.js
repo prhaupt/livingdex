@@ -1,6 +1,6 @@
 const CACHE = 'livingdex-v1';
 const ASSETS = [
-  './livingdex_fork.html',
+  './index.html',
   './manifest.json',
   './icon.png',
 ];

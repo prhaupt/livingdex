@@ -25,11 +25,11 @@
   #install-banner .install-text { flex:1; font-size:13px; color:#333; line-height:1.4; }
   #install-banner .install-text strong { display:block; font-size:14px; margin-bottom:2px; }
   #install-banner .install-close { background:none; border:none; font-size:20px; color:#999; cursor:pointer; padding:4px; line-height:1; }
-  .top-bar { background: #fff; border-bottom: 1px solid #e0e0d8; padding: 12px 20px; position: sticky; top: 0; z-index: 100; }
+  .top-bar { background: #f5f5f0; border-bottom: 1px solid #e0e0d8; padding: 12px 20px; position: sticky; top: 0; z-index: 100; }
   .top-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
   h1 { font-size: 20px; font-weight: 600; color: #1a1a1a; }
   .stats-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-  .pill { background: #f0f0ea; border: 1px solid #ddd; border-radius: 20px; padding: 4px 12px; font-size: 13px; color: #555; }
+  .pill { background: transparent; border: none; border-radius: 20px; padding: 4px 0; font-size: 13px; color: #666; }
   .pill strong { color: #1a1a1a; font-weight: 600; }
   .pbar-wrap { height: 6px; background: #e8e8e0; border-radius: 3px; margin-bottom: 10px; overflow: hidden; }
   .pbar-fill { height: 100%; background: #1D9E75; border-radius: 3px; transition: width .3s; }
@@ -64,8 +64,8 @@
   .cell.caught .pname { color: #0F6E56; font-weight: 500; }
   .nores { text-align: center; padding: 3rem; color: #999; font-size: 14px; }
   @media (max-width: 500px) {
-    .grid { grid-template-columns: repeat(4, 1fr); }
-    .main { padding: 12px; }
+    .grid { grid-template-columns: repeat(6, 1fr); }
+    .main { padding: 6px; }
   }
   .tabs { display: flex; gap: 0; border-bottom: 1px solid #e0e0d8; margin-bottom: 0; background: #fff; padding: 0 20px; }
   .tab-btn { padding: 8px 16px; font-size: 13px; font-weight: 500; color: #888; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; transition: color .15s; }
@@ -73,17 +73,8 @@
   .tab-btn.active { color: #1D9E75; border-bottom-color: #1D9E75; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-  .changelog { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
-  .changelog h2 { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 12px; }
-  .changelog ul { list-style: none; padding: 0; }
-  .changelog li { display: flex; gap: 10px; padding: 10px 14px; border-radius: 8px; margin-bottom: 6px; font-size: 13px; line-height: 1.5; background: #fff; border: 1px solid #e0e0d8; }
-  .changelog li::before { content: "•"; color: #1D9E75; font-weight: 700; flex-shrink: 0; }
-  .cl-tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 10px; margin-right: 6px; vertical-align: middle; }
-  .cl-tag.todo { background: #fff3cd; color: #856404; }
-  .cl-tag.done { background: #d1f0e4; color: #0f6e56; }
-  .cl-tag.bug { background: #fde8e8; color: #a32d2d; }
   .swsh-section-wrap { margin-bottom: 8px; }
-  .swsh-section-hdr { font-size: 13px; font-weight: 700; color: #fff; background: #1D9E75; padding: 7px 14px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+  .swsh-section-hdr { font-size: 13px; font-weight: 700; color: #e8eaf6; background: #2a2f45; padding: 7px 14px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
   .swsh-sec-count { font-size: 11px; font-weight: 500; opacity: .85; }
 
 
@@ -91,6 +82,53 @@
 
 
 
+
+
+/* Gear / settings popover */
+.gear-wrap { position: relative; }
+.gear-btn {
+  background: none; border: 1px solid #ccc; border-radius: 8px;
+  width: 34px; height: 34px; font-size: 16px; cursor: pointer;
+  color: #666; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.gear-btn:hover { background: #e8e8e0; color: #333; }
+.gear-popover {
+  display: none; position: absolute; right: 0; top: calc(100% + 6px);
+  background: #fff; border: 1px solid #e0e0d8; border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12); min-width: 160px;
+  z-index: 200; overflow: hidden;
+  animation: popIn 0.15s cubic-bezier(0.34,1.56,0.64,1);
+}
+.gear-popover.open { display: block; }
+@keyframes popIn {
+  from { opacity:0; transform: scale(0.92) translateY(-4px); }
+  to   { opacity:1; transform: scale(1)    translateY(0); }
+}
+.gear-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 11px 16px; background: none; border: none;
+  font-size: 13px; color: #333; cursor: pointer; text-align: left;
+  transition: background 0.1s;
+}
+.gear-item:hover { background: #f5f5f0; }
+.gear-item + .gear-item { border-top: 1px solid #f0f0e8; }
+.gear-icon { font-size: 15px; width: 18px; text-align: center; }
+
+
+/* Completed box header */
+.box-hdr.complete {
+  background: linear-gradient(135deg, #1a7a5e 0%, #1D9E75 100%);
+  border-bottom-color: #178a63;
+}
+.box-hdr.complete .box-title { color: #fff; }
+.box-hdr.complete .box-count { color: rgba(255,255,255,0.85); }
+.box-hdr.complete .arrow      { color: rgba(255,255,255,0.7); }
+.box-hdr.complete .minibar    { background: rgba(255,255,255,0.25); }
+.box-hdr.complete .minibar-fill { background: #fff; }
+
+/* Completed SwSh section header — slightly richer green */
+.swsh-section-hdr.complete-section { background: #1D9E75; color: #fff; }
 
 /* ===== Info Panel ===== */
 #info-overlay {
@@ -210,20 +248,20 @@
 /* Info button on cells */
 .cell { position: relative; }
 .cell-info-btn {
-  position: absolute; bottom: 3px; left: 3px;
-  width: 15px; height: 15px; border-radius: 50%;
-  background: rgba(255,255,255,0.9); border: 1px solid #bbb;
-  color: #555; font-size: 9px; font-weight: 700; font-style: italic;
-  line-height: 15px; text-align: center; cursor: pointer;
-  opacity: 0; transition: opacity 0.15s, background 0.15s; z-index: 3;
-  font-family: Georgia, serif; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  position: absolute; top: 3px; right: 3px;
+  width: 12px; height: 12px; border-radius: 50%;
+  background: rgba(255,255,255,0.75); border: 1px solid rgba(0,0,0,0.12);
+  color: #999; font-size: 8px; font-weight: 700; font-style: italic;
+  line-height: 12px; text-align: center; cursor: pointer;
+  opacity: 0; transition: opacity 0.15s; z-index: 3;
+  font-family: Georgia, serif;
   -webkit-user-select: none; user-select: none;
 }
 .cell:hover .cell-info-btn { opacity: 1; }
 .cell-info-btn:hover { background: #e8eaf6; border-color: #5c7cfa; color: #5c7cfa; }
-/* Always show on touch devices */
+/* Touch devices — small subtle dot, top-right corner above sprite */
 @media (pointer: coarse) {
-  .cell-info-btn { opacity: 0.6; width: 16px; height: 16px; font-size: 10px; line-height: 16px; }
+  .cell-info-btn { opacity: 0.35; width: 11px; height: 11px; font-size: 7px; line-height: 11px; }
 }
 
 /* Responsive panel */
@@ -255,21 +293,23 @@
   <div class="pbar-wrap"><div class="pbar-fill" id="mbar" style="width:0%"></div></div>
   <div class="controls">
     <input type="text" id="srch" placeholder="Search Pokémon..." oninput="activeTab==='swsh'?renderSwSh():render()">
-    <button id="fa" class="act" onclick="fm='all';activeTab==='swsh'?renderSwSh():render()">All</button>
-    <button id="fu" onclick="fm='unc';activeTab==='swsh'?renderSwSh():render()">Missing</button>
-    <button id="fc" onclick="fm='cat';activeTab==='swsh'?renderSwSh():render()">Caught</button>
-    <button onclick="setCol(false)">Expand all</button>
-    <button onclick="setCol(true)">Collapse all</button>
-    <button class="danger" onclick="clearAll()">Reset</button>
-    <button onclick="exportData()" style="background:#1D9E75;color:#fff;border-color:#1D9E75">Export</button>
-    <button onclick="importData()">Import</button>
+    <div class="gear-wrap">
+      <button class="gear-btn" onclick="toggleGear(event)" title="Settings">&#9881;</button>
+      <div class="gear-popover" id="gear-popover">
+        <button class="gear-item" onclick="exportData();closeGear()">
+          <span class="gear-icon">&#8681;</span> Export data
+        </button>
+        <button class="gear-item" onclick="importData();closeGear()">
+          <span class="gear-icon">&#8679;</span> Import data
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
 <div class="tabs">
   <button class="tab-btn active" onclick="showTab('dex')">Home</button>
   <button class="tab-btn" onclick="showTab('swsh')">Galar Regional</button>
-  <button class="tab-btn" onclick="showTab('changelog')">Dev Changelog</button>
 </div>
 
 <div id="tab-dex" class="tab-panel active">
@@ -284,14 +324,6 @@
 </div>
 </div>
 
-<div id="tab-changelog" class="tab-panel">
-<div class="changelog">
-  <h2>Dev Changelog</h2>
-  <ul>
-    <li><span class="cl-tag todo">TODO</span> Eternal Floette needs to be updated with new Gen 9 sprite once PokémonDB updates</li>
-  </ul>
-</div>
-</div>
 
 <script>
 // [display name, pokemondb slug]
@@ -808,6 +840,9 @@ function updateBoxCount(n) {
   const bar = document.getElementById("bb_"+n);
   if (el) el.textContent = bc + "/" + box.p.length;
   if (bar) bar.style.width = Math.round(bc/box.p.length*100) + "%";
+  // Update complete styling on box header
+  const hdrEl = el ? el.closest('.box-hdr') : null;
+  if (hdrEl) hdrEl.className = 'box-hdr' + (bc === box.p.length ? ' complete' : '');
 }
 
 function updateStats() {
@@ -822,9 +857,7 @@ function updateStats() {
 
 function render() {
   const q = document.getElementById("srch").value.toLowerCase();
-  document.getElementById("fa").className = fm==="all" ? "act" : "";
-  document.getElementById("fu").className = fm==="unc" ? "act" : "";
-  document.getElementById("fc").className = fm==="cat" ? "act" : "";
+
   updateStats();
   const container = document.getElementById("boxes");
   container.innerHTML = "";
@@ -846,7 +879,7 @@ function render() {
     card.className = "box-card" + (col[box.n] ? " collapsed" : "");
 
     const hdr = document.createElement("div");
-    hdr.className = "box-hdr";
+    hdr.className = "box-hdr" + (bc === box.p.length ? " complete" : "");
     hdr.innerHTML = `
       <span class="box-title">Box ${box.n}</span>
       <div class="box-right">
@@ -1357,6 +1390,7 @@ function renderSwSh() {const q = document.getElementById('srch').value.toLowerCa
       const totalInSection = SWSH_BOXES.filter(b => b.sk === box.sk).reduce((a, b) => a + b.p.length, 0);
       const caughtInSection = SWSH_BOXES.filter(b => b.sk === box.sk)
         .reduce((a, b) => a + b.p.filter(([n]) => swshCaught['sw' + b.n + '_' + n]).length, 0);
+      if (caughtInSection === totalInSection) secHdr.classList.add('complete-section');
       secHdr.innerHTML = `<span>${SWSH_SECTION_LABELS[box.sk]}</span><span class="swsh-sec-count">${caughtInSection}/${totalInSection}</span>`;
       secHdr.id = 'swsh-sec-' + box.sk;
       sectionWrapper.appendChild(secHdr);
@@ -1369,7 +1403,8 @@ function renderSwSh() {const q = document.getElementById('srch').value.toLowerCa
     card.className = 'box-card' + (swshCol[box.n] ? ' collapsed' : '');
 
     const hdr = document.createElement('div');
-    hdr.className = 'box-hdr';
+    hdr.className = 'box-hdr' + (bc === box.p.length ? ' complete' : '');
+    hdr.id = 'swsh-box-hdr-' + box.n;
     // Get section label prefix for box title
     const secLabel = SWSH_SECTION_LABELS[box.sk];
     const boxNumInSection = box.n - Math.min(...SWSH_BOXES.filter(b => b.sk === box.sk).map(b => b.n)) + 1;
@@ -1415,6 +1450,20 @@ function toggleSwSh(id) {
 }
 
 function updateSwShSectionCounts() {
+  // Update each individual box header — count, minibar, complete styling
+  SWSH_BOXES.forEach(box => {
+    const hdr = document.getElementById('swsh-box-hdr-' + box.n);
+    if (!hdr) return;
+    const bc = box.p.filter(([n]) => !!swshCaught['sw' + box.n + '_' + n]).length;
+    const total = box.p.length;
+    const countSpan = hdr.querySelector('.box-count');
+    const minibar = hdr.querySelector('.minibar-fill');
+    if (countSpan) countSpan.textContent = bc + '/' + total;
+    if (minibar) minibar.style.width = Math.round(bc / total * 100) + '%';
+    hdr.className = 'box-hdr' + (bc === total ? ' complete' : '');
+  });
+
+  // Update section headers — count text and complete styling
   Object.keys(SWSH_SECTION_LABELS).forEach(sk => {
     const el = document.getElementById('swsh-sec-' + sk);
     if (!el) return;
@@ -1422,6 +1471,8 @@ function updateSwShSectionCounts() {
     const total = boxes.reduce((a, b) => a + b.p.length, 0);
     const caught = boxes.reduce((a, b) => a + b.p.filter(([n]) => swshCaught['sw' + b.n + '_' + n]).length, 0);
     el.querySelector('.swsh-sec-count').textContent = caught + '/' + total;
+    if (caught === total) el.classList.add('complete-section');
+    else el.classList.remove('complete-section');
   });
   // Update overall stats bar when swsh is active
   if (activeTab === 'swsh') {
@@ -1435,6 +1486,16 @@ function updateSwShSectionCounts() {
   }
 }
 
+
+function toggleGear(e) {
+  e.stopPropagation();
+  document.getElementById('gear-popover').classList.toggle('open');
+}
+function closeGear() {
+  document.getElementById('gear-popover').classList.remove('open');
+}
+// Close popover when clicking anywhere else
+document.addEventListener('click', () => closeGear());
 
 // Initial render
 render();
