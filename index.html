@@ -19,6 +19,7 @@
 <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Home LivingDex&quot;,&quot;short_name&quot;:&quot;LivingDex&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%23f5f5f0&quot;,&quot;theme_color&quot;:&quot;%231D9E75&quot;}">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: #f5f5f0; overscroll-behavior: none; }
   body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f0; color: #1a1a1a; min-height: 100vh; }
   #install-banner { display:none; position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid #e0e0d8; padding:12px 16px; z-index:999; align-items:center; gap:12px; box-shadow:0 -2px 8px rgba(0,0,0,.08); }
   #install-banner .install-icon { width:40px; height:40px; background:#1D9E75; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
@@ -79,7 +80,6 @@
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
   .swsh-section-wrap { margin-bottom: 8px; }
-  .swsh-section-hdr { font-size: 13px; font-weight: 700; color: #e8eaf6; background: #2a2f45; padding: 7px 14px; border-radius: 8px 8px 0 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
   .swsh-sec-count { font-size: 11px; font-weight: 500; opacity: .85; }
 
 
@@ -133,7 +133,6 @@
 .box-hdr.complete .minibar-fill { background: #fff; }
 
 /* Completed SwSh section header — slightly richer green */
-.swsh-section-hdr.complete-section { background: #1D9E75; color: #fff; }
 
 /* ===== Info Panel ===== */
 #info-overlay {
@@ -1390,15 +1389,6 @@ function renderSwSh() {const q = document.getElementById('srch').value.toLowerCa
       currentSection = box.sk;
       sectionWrapper = document.createElement('div');
       sectionWrapper.className = 'swsh-section-wrap';
-      const secHdr = document.createElement('div');
-      secHdr.className = 'swsh-section-hdr';
-      const totalInSection = SWSH_BOXES.filter(b => b.sk === box.sk).reduce((a, b) => a + b.p.length, 0);
-      const caughtInSection = SWSH_BOXES.filter(b => b.sk === box.sk)
-        .reduce((a, b) => a + b.p.filter(([n]) => swshCaught['sw' + b.n + '_' + n]).length, 0);
-      if (caughtInSection === totalInSection) secHdr.classList.add('complete-section');
-      secHdr.innerHTML = `<span>${SWSH_SECTION_LABELS[box.sk]}</span><span class="swsh-sec-count">${caughtInSection}/${totalInSection}</span>`;
-      secHdr.id = 'swsh-sec-' + box.sk;
-      sectionWrapper.appendChild(secHdr);
       container.appendChild(sectionWrapper);
     }
 
