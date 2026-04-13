@@ -1,0 +1,18 @@
+{
+  "name": "LivingDex Tracker",
+  "short_name": "LivingDex",
+  "description": "Pokémon HOME LivingDex tracker",
+  "start_url": "./livingdex_fork.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#11152a",
+  "theme_color": "#11152a",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
