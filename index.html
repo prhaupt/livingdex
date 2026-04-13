@@ -56,7 +56,7 @@
   .cell { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; padding: 4px 2px; border-radius: 6px; cursor: pointer; transition: background .1s; min-height: 108px; position: relative; border: 1.5px solid transparent; }
   .cell:hover { background: #f5f5f0; }
   .cell.caught { background: rgba(29,158,117,.1); border-color: rgba(29,158,117,.4); }
-  .cell.caught::after { content: "✓"; position: absolute; top: 2px; right: 4px; font-size: 10px; color: #1D9E75; font-weight: 700; }
+  /* tick removed — caught state shown by cell highlight only */
   .cell img { width: 80px; height: 80px; object-fit: contain; display: block; transition: filter .15s; }
   .cell img.grey { filter: grayscale(1) opacity(0.3); }
   .cell.caught img { filter: none; }
@@ -64,8 +64,13 @@
   .cell.caught .pname { color: #0F6E56; font-weight: 500; }
   .nores { text-align: center; padding: 3rem; color: #999; font-size: 14px; }
   @media (max-width: 500px) {
-    .grid { grid-template-columns: repeat(6, 1fr); }
-    .main { padding: 6px; }
+    .grid { grid-template-columns: repeat(6, 1fr); gap: 1px; }
+    .main { padding: 4px; }
+    .cell { min-height: 72px; padding: 3px 1px; border-radius: 5px; }
+    .cell img { width: 52px; height: 52px; }
+    .pname { font-size: 7.5px; max-width: 54px; margin-top: 1px; }
+    .cell-info-btn { width: 10px; height: 10px; font-size: 6px; line-height: 10px; }
+    .box-card { border-radius: 8px; }
   }
   .tabs { display: flex; gap: 0; border-bottom: 1px solid #e0e0d8; margin-bottom: 0; background: #fff; padding: 0 20px; }
   .tab-btn { padding: 8px 16px; font-size: 13px; font-weight: 500; color: #888; background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; margin-bottom: -1px; transition: color .15s; }
