@@ -2,7 +2,7 @@
   "name": "LivingDex Tracker",
   "short_name": "LivingDex",
   "description": "Pokémon HOME LivingDex tracker",
-  "start_url": "./livingdex_fork.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#11152a",
