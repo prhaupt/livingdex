@@ -20,7 +20,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { background: #fff; overscroll-behavior: none; overflow-x: hidden; }
-  body { font-family: system-ui, -apple-system, sans-serif; background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden; -webkit-user-select: none; user-select: none; }
   @media (pointer: coarse) {
     ::-webkit-scrollbar { width: 0px; background: transparent; }
     ::-webkit-scrollbar-thumb { background: transparent; }
@@ -174,7 +174,7 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-#info-result { color: #c5cae9; font-size: 0.86rem; line-height: 1.55; }
+#info-result { color: #c5cae9; font-size: 0.86rem; line-height: 1.55; -webkit-user-select: text; user-select: text; }
 .info-section { margin-bottom: 14px; }
 .info-section-title {
   font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em;
@@ -1143,8 +1143,8 @@ function formatCellName(name) {
   let base = name, tag = '', gender = '';
 
   // Gender
-  if (/ \(M\)/.test(base)) { gender = '♂'; base = base.replace(' (M)', ''); }
-  else if (/ \(F\)/.test(base)) { gender = '♀'; base = base.replace(' (F)', ''); }
+  if (/ \(M\)/.test(base)) { gender = '♂︎'; base = base.replace(' (M)', ''); }
+  else if (/ \(F\)/.test(base)) { gender = '♀︎'; base = base.replace(' (F)', ''); }
 
   // Space-suffix forms (longest match first, before bracket stripping)
   const suffixMap = [
