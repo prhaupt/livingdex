@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LivingDex">
-  <meta name="theme-color" content="#11152a">
+  <meta name="theme-color" content="#ffffff">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,10 +31,10 @@
   #install-banner .install-text strong { display:block; font-size:14px; margin-bottom:2px; }
   #install-banner .install-close { background:none; border:none; font-size:20px; color:#999; cursor:pointer; padding:4px; line-height:1; }
   .top-bar { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 20px; position: sticky; top: 0; z-index: 100; }
-#page-dex .top-bar { background: linear-gradient(160deg, #f0f9e8 0%, #e8f5e0 40%, #d8f0f0 100%); border-bottom: none; }
+#page-dex .top-bar { background: linear-gradient(to bottom, #f0f9e8 0%, #e0f5e8 50%, #d8f0f0 100%); border-bottom: none; }
 #page-dex .pbar-wrap { background: rgba(0,0,0,0.08); }
 #page-dex .pbar-fill { background: #1a7a5e; }
-#page-swsh .top-bar { background: linear-gradient(160deg, #e8f0ff 0%, #f0e8ff 50%, #ffe8f0 100%); border-bottom: none; }
+#page-swsh .top-bar { background: linear-gradient(to bottom, #e8f0ff 0%, #f0e8ff 50%, #ffe8f0 100%); border-bottom: none; }
 #page-swsh .pbar-wrap { background: rgba(0,0,0,0.1); }
 #page-swsh input[type=text] { border: 1px solid rgba(0,0,0,0.12); background: rgba(255,255,255,0.6); }
 #page-swsh .pbar-fill { background: linear-gradient(90deg, #7b6cf6, #e06aaa); }
@@ -74,7 +74,7 @@
   .cell.caught img { filter: none; }
   
 .pname-base { display: block; line-height: 1.2; max-width: 82px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pname-tag { display: block; font-size: 7.5px; color: #aaa; line-height: 1.2; margin-top: 1px; letter-spacing: 0.01em; }
+.pname-tag { display: block; font-size: 7.5px; color: #aaa; line-height: 1.1; margin-top: 1px; letter-spacing: 0.01em; max-width: 82px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cell.caught .pname-tag { color: #888; }
 .pname-gender { font-size: 8px; color: #aaa; margin-left: 1px; }
 .cell.caught .pname-gender { color: #888; }
@@ -86,9 +86,10 @@
   @media (max-width: 500px) {
     .grid, .box-grid { grid-template-columns: repeat(6, 1fr); gap: 1px; }
     .main { padding: 4px; }
-    .cell { min-height: 72px; padding: 3px 1px; border-radius: 5px; }
+    .cell { height: 76px; min-height: unset; padding: 2px 1px 4px; border-radius: 5px; }
     .cell img { width: 52px; height: 52px; }
-    .pname { font-size: 7.5px; max-width: 54px; margin-top: 1px; }
+    .pname { font-size: 7.5px; max-width: 54px; margin-top: 1px; height: 18px; }
+    input[type=text], input { font-size: 16px !important; }
     .cell-info-btn { width: 10px; height: 10px; font-size: 6px; line-height: 10px; }
 @media (pointer: coarse) { .cell-info-btn { display: none; } }
     .box-card { border-radius: 8px; }
@@ -152,7 +153,7 @@
   transition: color 0.15s, background 0.15s;
 }
 #info-close:hover { color: #e8eaf6; background: #2d3550; }
-#info-panel-body { flex: 1; overflow-y: auto; padding: 16px; }
+#info-panel-
 #info-sprite-wrap {
   display: flex; justify-content: center; margin-bottom: 14px;
 }
@@ -340,7 +341,7 @@
 .tile-bg-bw .tile-sprite-back {
   transform: translateX(-45px) scale(0.82) scaleX(-1);
 }
-#page-bw .top-bar { background: linear-gradient(160deg, #2c2c2c 0%, #555 40%, #aaa 100%); border-bottom: none; }
+#page-bw .top-bar { background: linear-gradient(to bottom, #2c2c2c 0%, #555 50%, #aaa 100%); border-bottom: none; }
 #page-bw .back-btn { color: rgba(255,255,255,0.9); }
 #page-bw .pill { color: rgba(255,255,255,0.85); }
 #page-bw .pill strong { color: #fff; font-weight: 700; }
@@ -1121,6 +1122,16 @@ function render() {
 }
 
 // ===== Info Panel =====
+// Hide info buttons on touch devices (belt-and-suspenders alongside CSS)
+if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.cell-info-btn').forEach(el => el.style.display = 'none');
+  });
+  // Also override addInfoBtn to not add the button at all
+  const _origAddInfoBtn = addInfoBtn;
+  window._touchDevice = true;
+}
+
 let infoPanelOpen = false;
 let infoPanelLockScroll = false;
 let longPressTimer = null;
@@ -1196,10 +1207,16 @@ function formatCellName(name) {
     if (base === full || base.startsWith(full + ' ')) { base = b; tag = t; break; }
   }
 
-  // Alcremie: "Alcremie {Cream} {Decoration}" → tag = "Cream Decoration"
+  // Alcremie: "Alcremie {Cream} {Decoration}" → tag = "Cream Decoration" (abbreviated)
   if (!tag && base.startsWith('Alcremie ')) {
-    const parts = base.replace('Alcremie ', '').trim();
-    base = 'Alcremie'; tag = parts;
+    const parts = base.replace('Alcremie ', '').trim().split(' ');
+    // Shorten cream names for display
+    const creamAbbr = {'Vanilla':'Van.','Ruby Swirl':'R.Swirl','Caramel':'Car.','Rainbow':'Rain.','Salted':'Salt.','Matcha':'Mat.','Lemon':'Lem.','Mint':'Mint','Ruby':'Ruby'};
+    let cream = parts.slice(0, parts.length > 2 ? parts.length - 1 : 1).join(' ');
+    const deco = parts[parts.length - 1];
+    const abbr = creamAbbr[cream] || cream;
+    base = 'Alcremie';
+    tag = parts.length > 1 ? abbr + ' ' + deco : cream;
   }
 
   // Minior default form is meteor shell
@@ -1229,7 +1246,7 @@ function formatCellName(name) {
     // Still strip any remaining brackets from base (e.g. Urshifu Rapid Strike (Gigantamax))
     base = base.replace(/\s*\([^)]+\)/g, '').trim();
     // Append GX if Gigantamax was in original name
-    if (/gigantamax/i.test(name) && tag !== 'Gigantamax') tag = tag + ' GX';
+    if (/gigantamax/i.test(name) && tag !== 'Gigantamax') tag = 'Gigantamax';
   }
 
   // Regional prefixes
@@ -1539,6 +1556,7 @@ function renderInfoFromPokeAPI(pokemon, species, evoData, displayName, pokeUrl, 
 
 
 function addInfoBtn(cell, name, slug) {
+  if (window._touchDevice) return; // touch devices use long press on cell instead
   const btn = document.createElement('div');
   btn.className = 'cell-info-btn';
   btn.textContent = 'i';
