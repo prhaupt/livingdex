@@ -90,6 +90,7 @@
     .cell img { width: 52px; height: 52px; }
     .pname { font-size: 7.5px; max-width: 54px; margin-top: 1px; }
     .cell-info-btn { width: 10px; height: 10px; font-size: 6px; line-height: 10px; }
+@media (pointer: coarse) { .cell-info-btn { display: none; } }
     .box-card { border-radius: 8px; }
   }
   .tabs { display: flex; gap: 0; border-bottom: 1px solid #e0e0d8; margin-bottom: 0; background: #fff; padding: 0 20px; }
@@ -1602,6 +1603,7 @@ function renderBW() {
       img.src = getImgSrc(slug);
       img.alt = name;
       img.className = isCaught ? '' : 'grey';
+  img.addEventListener('contextmenu', e => e.preventDefault());
       img.onerror = function() {
         this.onerror=null;
         this.src='https://img.pokemondb.net/sprites/home/normal/' + slug + '-male.png';
@@ -1816,11 +1818,35 @@ function makeCell(name, slug, isCaught, onClickFn, cellId) {
   cell.className = 'cell' + (isCaught ? ' caught' : '');
   cell.title = name;
   if (cellId) cell.id = cellId;
+  // Desktop click
   cell.onclick = onClickFn;
+
+  // Touch: tap = toggle, long press = info panel
+  let _pressTimer = null;
+  let _pressMoved = false;
+  cell.addEventListener('touchstart', e => {
+    _pressMoved = false;
+    _pressTimer = setTimeout(() => {
+      if (!_pressMoved) {
+        e.preventDefault();
+        openInfoPanel(name, slug);
+      }
+    }, 500);
+  }, { passive: false });
+  cell.addEventListener('touchmove', () => { _pressMoved = true; clearTimeout(_pressTimer); }, { passive: true });
+  cell.addEventListener('touchend', e => {
+    if (_pressTimer) {
+      clearTimeout(_pressTimer);
+      // Short tap — let onclick fire normally
+    }
+  }, { passive: true });
+  cell.addEventListener('contextmenu', e => e.preventDefault()); // suppress image save menu
+
   const img = document.createElement('img');
   img.src = getImgSrc(slug);
   img.alt = name;
   img.className = isCaught ? '' : 'grey';
+  img.addEventListener('contextmenu', e => e.preventDefault());
   img.onerror = function() {
     const fallbackMap = {
       'darmanitan-galarian-standard': 'darmanitan-galarian',
@@ -1925,6 +1951,7 @@ function toggleSwSh(id) {
     cell.className = 'cell' + (isCaught ? ' caught' : '');
     const img = cell.querySelector('img');
     if (img) img.className = isCaught ? '' : 'grey';
+  img.addEventListener('contextmenu', e => e.preventDefault());
   }
   updateSwShSectionCounts();
 }
