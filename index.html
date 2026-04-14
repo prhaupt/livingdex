@@ -69,14 +69,14 @@
   .cell:hover { background: #f0f4ff; }
   .cell.caught { background: transparent; border-color: transparent; }
   /* tick removed */
-  .cell img { width: 80px; height: 80px; object-fit: contain; display: block; transition: filter .15s; flex-shrink: 0; }
+  .cell img { width: 80px; height: 80px; object-fit: contain; display: block; transition: filter .15s; flex-shrink: 0; -webkit-touch-callout: none; pointer-events: none; }
   .cell img.grey { filter: grayscale(1) opacity(0.25); }
   .cell.caught img { filter: none; }
   
 .pname-base { display: block; line-height: 1.2; max-width: 82px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pname-tag { display: block; font-size: 7.5px; color: #aaa; line-height: 1.1; margin-top: 1px; letter-spacing: 0.01em; max-width: 82px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cell.caught .pname-tag { color: #888; }
-.pname-gender { font-size: 8px; color: #aaa; margin-left: 1px; }
+.pname-gender { font-size: 8px; color: #aaa; margin-left: 1px; line-height: 1; vertical-align: middle; display: inline-block; }
 .cell.caught .pname-gender { color: #888; }
 
 .pname { font-size: 9px; color: #888; text-align: center; line-height: 1.2; margin-top: 2px; max-width: 82px; height: 22px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex-shrink: 0; }
@@ -1207,16 +1207,17 @@ function formatCellName(name) {
     if (base === full || base.startsWith(full + ' ')) { base = b; tag = t; break; }
   }
 
-  // Alcremie: "Alcremie {Cream} {Decoration}" → tag = "Cream Decoration" (abbreviated)
+  // Alcremie: "Alcremie {Cream} {Decoration}" → show only cream in cell, full name in info panel
   if (!tag && base.startsWith('Alcremie ')) {
     const parts = base.replace('Alcremie ', '').trim().split(' ');
-    // Shorten cream names for display
-    const creamAbbr = {'Vanilla':'Van.','Ruby Swirl':'R.Swirl','Caramel':'Car.','Rainbow':'Rain.','Salted':'Salt.','Matcha':'Mat.','Lemon':'Lem.','Mint':'Mint','Ruby':'Ruby'};
-    let cream = parts.slice(0, parts.length > 2 ? parts.length - 1 : 1).join(' ');
-    const deco = parts[parts.length - 1];
-    const abbr = creamAbbr[cream] || cream;
+    // For Ruby Swirl, Caramel Swirl etc — cream is two words
+    const twoWordCreams = ['Ruby Swirl', 'Caramel Swirl', 'Rainbow Swirl'];
+    let cream = parts[0];
+    for (const tc of twoWordCreams) {
+      if (base.includes(tc)) { cream = tc; break; }
+    }
     base = 'Alcremie';
-    tag = parts.length > 1 ? abbr + ' ' + deco : cream;
+    tag = cream;
   }
 
   // Minior default form is meteor shell
