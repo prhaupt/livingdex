@@ -559,15 +559,15 @@
 #page-shiny .pbar-wrap{background:rgba(0,0,0,0.08)}
 #page-shiny .pbar-fill{background:linear-gradient(90deg,#a060e0,#e060c0)}
 #page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
-.bkd-strip { display:flex; gap:0; padding:5px 0 3px; }
+.bkd-strip { display:flex; gap:14px; padding:8px 0 2px; }
 .bkd-chip { flex:1; min-width:0; }
-.bkd-chip-row { display:flex; align-items:baseline; gap:3px; }
-.bkd-chip-label { font-size:9.5px; font-weight:500; color:#555; flex-shrink:0; }
-.bkd-chip-sub { font-size:8px; color:#bbb; flex:1; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.bkd-chip-pct { font-size:9.5px; font-weight:500; color:#555; flex-shrink:0; padding-left:3px; }
-.bkd-chip-bar { height:2px; background:rgba(0,0,0,0.07); border-radius:2px; overflow:hidden; margin-top:3px; }
-.bkd-chip-fill { height:100%; border-radius:2px; background:#1a7a5e; transition:width .3s; }
-#page-shiny .bkd-chip-fill { background:#9050d0; }
+.bkd-chip-label { display:block; font-size:9px; text-transform:uppercase; letter-spacing:.3px; color:#aaa; font-weight:400; margin-bottom:5px; }
+.bkd-chip-stats { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:5px; }
+.bkd-chip-pct { font-size:13px; font-weight:700; color:#1a1a1a; line-height:1; }
+.bkd-chip-sub { font-size:9px; color:#bbb; }
+.bkd-chip-bar { height:4px; background:rgba(0,0,0,0.08); border-radius:3px; overflow:hidden; }
+.bkd-chip-fill { height:100%; background:#1a7a5e; border-radius:3px; transition:width .3s; }
+#page-shiny .bkd-chip-fill { background:linear-gradient(90deg,#a060e0,#e060c0); }
 .bkd-expand { background:none; border:none; cursor:pointer; padding:0 0 0 5px; color:#bbb; font-size:10px; line-height:1; transition:transform .2s; flex-shrink:0; }
 .bkd-expand.open { transform:rotate(180deg); }
 
@@ -874,19 +874,23 @@
     <div class="pbar-wrap"><div class="pbar-fill" id="mbar" style="width:0%"></div></div>
     <div class="bkd-strip" id="bkd-strip-dex" style="display:none">
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">National</span><span class="bkd-chip-sub" id="bkd-national">–</span><span class="bkd-chip-pct" id="bkd-pct-national">0%</span></div>
+        <span class="bkd-chip-label">National</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-national">–</span><span class="bkd-chip-pct" id="bkd-pct-national">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-national" style="width:0%"></div></div>
       </div>
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">Forms</span><span class="bkd-chip-sub" id="bkd-forms">–</span><span class="bkd-chip-pct" id="bkd-pct-forms">0%</span></div>
+        <span class="bkd-chip-label">Forms</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-forms">–</span><span class="bkd-chip-pct" id="bkd-pct-forms">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-forms" style="width:0%"></div></div>
       </div>
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">Gender</span><span class="bkd-chip-sub" id="bkd-gender">–</span><span class="bkd-chip-pct" id="bkd-pct-gender">0%</span></div>
+        <span class="bkd-chip-label">Gender</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-gender">–</span><span class="bkd-chip-pct" id="bkd-pct-gender">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gender" style="width:0%"></div></div>
       </div>
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">G-Max</span><span class="bkd-chip-sub" id="bkd-gmax">–</span><span class="bkd-chip-pct" id="bkd-pct-gmax">0%</span></div>
+        <span class="bkd-chip-label">G-Max</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-gmax">–</span><span class="bkd-chip-pct" id="bkd-pct-gmax">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gmax" style="width:0%"></div></div>
       </div>
     </div>
@@ -3301,19 +3305,23 @@ if ('serviceWorker' in navigator) {
     <div class="pbar-wrap"><div class="pbar-fill" id="shiny-mbar" style="width:0%"></div></div>
     <div class="bkd-strip" id="bkd-strip-shiny" style="display:none">
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">National</span><span class="bkd-chip-sub" id="shiny-bkd-national">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-national">0%</span></div>
+        <span class="bkd-chip-label">National</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-national">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-national">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-national" style="width:0%"></div></div>
       </div>
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">Forms</span><span class="bkd-chip-sub" id="shiny-bkd-forms">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-forms">0%</span></div>
+        <span class="bkd-chip-label">Forms</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-forms">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-forms">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-forms" style="width:0%"></div></div>
       </div>
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">Gender</span><span class="bkd-chip-sub" id="shiny-bkd-gender">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-gender">0%</span></div>
+        <span class="bkd-chip-label">Gender</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-gender">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-gender">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gender" style="width:0%"></div></div>
       </div>
       <div class="bkd-chip">
-        <div class="bkd-chip-row"><span class="bkd-chip-label">G-Max</span><span class="bkd-chip-sub" id="shiny-bkd-gmax">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-gmax">0%</span></div>
+        <span class="bkd-chip-label">G-Max</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-gmax">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-gmax">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gmax" style="width:0%"></div></div>
       </div>
     </div>
