@@ -559,26 +559,16 @@
 #page-shiny .pbar-wrap{background:rgba(0,0,0,0.08)}
 #page-shiny .pbar-fill{background:linear-gradient(90deg,#a060e0,#e060c0)}
 #page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
-.bkd-strip { display:flex; gap:6px; padding:6px 0 2px; }
-.bkd-chip { flex:1; background:rgba(255,255,255,0.55); border-radius:10px; padding:6px 8px 5px; border:1px solid rgba(0,0,0,0.07); min-width:0; }
-.bkd-chip-label { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
-.bkd-chip-bar { height:3px; background:rgba(0,0,0,0.10); border-radius:2px; overflow:hidden; margin-bottom:4px; }
-.bkd-chip-fill { height:100%; border-radius:2px; transition:width .3s; }
-.bkd-chip-count { font-size:10.5px; color:#555; display:flex; align-items:baseline; gap:3px; }
-.bkd-chip-pct { font-weight:700; font-size:12px; }
-.bkd-chip-sub { font-size:9.5px; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.bkd-chip-national .bkd-chip-label { color:#1a7a5e; }
-.bkd-chip-national .bkd-chip-fill  { background:#1a7a5e; }
-.bkd-chip-national .bkd-chip-pct  { color:#1a7a5e; }
-.bkd-chip-forms   .bkd-chip-label  { color:#4a78c8; }
-.bkd-chip-forms   .bkd-chip-fill   { background:#4a78c8; }
-.bkd-chip-forms   .bkd-chip-pct  { color:#4a78c8; }
-.bkd-chip-gender  .bkd-chip-label  { color:#c870a0; }
-.bkd-chip-gender  .bkd-chip-fill   { background:#c870a0; }
-.bkd-chip-gender  .bkd-chip-pct  { color:#c870a0; }
-.bkd-chip-gmax    .bkd-chip-label  { color:#7844c8; }
-.bkd-chip-gmax    .bkd-chip-fill   { background:#7844c8; }
-.bkd-chip-gmax    .bkd-chip-pct  { color:#7844c8; }
+.bkd-strip { display:flex; gap:5px; padding:5px 0 2px; }
+.bkd-chip { flex:1; background:rgba(255,255,255,0.4); border-radius:7px; padding:5px 6px 4px; border:1px solid rgba(0,0,0,0.06); min-width:0; }
+.bkd-chip-label { font-size:8px; font-weight:500; text-transform:uppercase; letter-spacing:.5px; color:#aaa; margin-bottom:3px; }
+.bkd-chip-bar { height:2px; background:rgba(0,0,0,0.08); border-radius:2px; overflow:hidden; margin-bottom:4px; }
+.bkd-chip-fill { height:100%; border-radius:2px; background:#1a7a5e; transition:width .3s; }
+.bkd-chip-count { display:flex; align-items:baseline; gap:3px; }
+.bkd-chip-pct { font-size:11px; font-weight:600; color:#1a7a5e; line-height:1; }
+.bkd-chip-sub { font-size:8.5px; color:#bbb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#page-shiny .bkd-chip-fill { background:#9050d0; }
+#page-shiny .bkd-chip-pct  { color:#9050d0; }
 
 .cell.shiny-locked{cursor:default;pointer-events:none;background:transparent;border-color:transparent}
 .cell.shiny-locked img{display:none}
@@ -881,22 +871,22 @@
     </div>
     <div class="pbar-wrap"><div class="pbar-fill" id="mbar" style="width:0%"></div></div>
     <div class="bkd-strip">
-      <div class="bkd-chip bkd-chip-national">
+      <div class="bkd-chip">
         <div class="bkd-chip-label">National</div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-national" style="width:0%"></div></div>
         <div class="bkd-chip-count"><span class="bkd-chip-pct" id="bkd-pct-national">0%</span><span class="bkd-chip-sub" id="bkd-national">–</span></div>
       </div>
-      <div class="bkd-chip bkd-chip-forms">
+      <div class="bkd-chip">
         <div class="bkd-chip-label">Forms</div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-forms" style="width:0%"></div></div>
         <div class="bkd-chip-count"><span class="bkd-chip-pct" id="bkd-pct-forms">0%</span><span class="bkd-chip-sub" id="bkd-forms">–</span></div>
       </div>
-      <div class="bkd-chip bkd-chip-gender">
+      <div class="bkd-chip">
         <div class="bkd-chip-label">Gender</div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gender" style="width:0%"></div></div>
         <div class="bkd-chip-count"><span class="bkd-chip-pct" id="bkd-pct-gender">0%</span><span class="bkd-chip-sub" id="bkd-gender">–</span></div>
       </div>
-      <div class="bkd-chip bkd-chip-gmax">
+      <div class="bkd-chip">
         <div class="bkd-chip-label">G-Max</div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gmax" style="width:0%"></div></div>
         <div class="bkd-chip-count"><span class="bkd-chip-pct" id="bkd-pct-gmax">0%</span><span class="bkd-chip-sub" id="bkd-gmax">–</span></div>
@@ -2719,7 +2709,8 @@ function updateDexStats(dexId) {
   if (tc) tc.textContent = total;
   if (p)  p.textContent  = pct + '%';
   if (m)  m.style.width  = pct + '%';
-  if (dexId === 'dex') updateDexBreakdown();
+  if (dexId === 'dex')   updateDexBreakdown();
+  if (dexId === 'shiny') updateShinyBreakdown();
 }
 
 // ── UPDATE TILE COUNTS ────────────────────────────────────────
@@ -2801,6 +2792,33 @@ function updateDexBreakdown() {
     const pctEl  = document.getElementById('bkd-pct-' + key);
     const subEl  = document.getElementById('bkd-' + key);
     const barEl  = document.getElementById('bkd-bar-' + key);
+    if (pctEl)  pctEl.textContent = pct + '%';
+    if (subEl)  subEl.textContent = c + '/' + t;
+    if (barEl)  barEl.style.width = pct + '%';
+  });
+}
+
+function updateShinyBreakdown() {
+  const caught = getCaught('shiny');
+  const totals = {national:0, forms:0, gender:0, gmax:0};
+  const counts  = {national:0, forms:0, gender:0, gmax:0};
+  BD.forEach(box => {
+    box.p.forEach(([name, slug]) => {
+      if (isShinyLocked(name, slug)) return; // locked entries are blank — exclude from totals
+      const cats = classifyBDEntry(name, slug);
+      const isCaught = !!caught[getCellId('shiny', box.n, name, slug)];
+      cats.forEach(cat => {
+        totals[cat]++;
+        if (isCaught) counts[cat]++;
+      });
+    });
+  });
+  ['national','forms','gender','gmax'].forEach(key => {
+    const c = counts[key], t = totals[key];
+    const pct = t > 0 ? Math.round(c/t*100) : 0;
+    const pctEl  = document.getElementById('shiny-bkd-pct-' + key);
+    const subEl  = document.getElementById('shiny-bkd-' + key);
+    const barEl  = document.getElementById('shiny-bkd-bar-' + key);
     if (pctEl)  pctEl.textContent = pct + '%';
     if (subEl)  subEl.textContent = c + '/' + t;
     if (barEl)  barEl.style.width = pct + '%';
@@ -3265,6 +3283,28 @@ if ('serviceWorker' in navigator) {
       </div>
     </div>
     <div class="pbar-wrap"><div class="pbar-fill" id="shiny-mbar" style="width:0%"></div></div>
+    <div class="bkd-strip">
+      <div class="bkd-chip">
+        <div class="bkd-chip-label">National</div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-national" style="width:0%"></div></div>
+        <div class="bkd-chip-count"><span class="bkd-chip-pct" id="shiny-bkd-pct-national">0%</span><span class="bkd-chip-sub" id="shiny-bkd-national">–</span></div>
+      </div>
+      <div class="bkd-chip">
+        <div class="bkd-chip-label">Forms</div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-forms" style="width:0%"></div></div>
+        <div class="bkd-chip-count"><span class="bkd-chip-pct" id="shiny-bkd-pct-forms">0%</span><span class="bkd-chip-sub" id="shiny-bkd-forms">–</span></div>
+      </div>
+      <div class="bkd-chip">
+        <div class="bkd-chip-label">Gender</div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gender" style="width:0%"></div></div>
+        <div class="bkd-chip-count"><span class="bkd-chip-pct" id="shiny-bkd-pct-gender">0%</span><span class="bkd-chip-sub" id="shiny-bkd-gender">–</span></div>
+      </div>
+      <div class="bkd-chip">
+        <div class="bkd-chip-label">G-Max</div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gmax" style="width:0%"></div></div>
+        <div class="bkd-chip-count"><span class="bkd-chip-pct" id="shiny-bkd-pct-gmax">0%</span><span class="bkd-chip-sub" id="shiny-bkd-gmax">–</span></div>
+      </div>
+    </div>
     <div class="controls">
       <input type="text" id="shiny-srch" placeholder="Search Pokémon..." oninput="renderDex('shiny')">
     </div>
