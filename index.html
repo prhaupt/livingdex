@@ -1193,7 +1193,7 @@ const BD=[
 ["Sprigatito","sprigatito"],["Floragato","floragato"],["Meowscarada","meowscarada"],["Fuecoco","fuecoco"],["Crocalor","crocalor"],["Skeledirge","skeledirge"],
 ["Quaxly","quaxly"],["Quaxwell","quaxwell"],["Quaquaval","quaquaval"],["Lechonk","lechonk"],["Oinkologne (M)","oinkologne"],["Oinkologne (F)","oinkologne-f"],
 ["Tarountula","tarountula"],["Spidops","spidops"],["Nymble","nymble"],["Lokix","lokix"],["Pawmi","pawmi"],["Pawmo","pawmo"],
-["Pawmot","pawmot"],["Tandemaus","tandemaus"],["Maushold","maushold-family3"],["Maushold 4","maushold-family4"],["Fidough","fidough"],["Dachsbun","dachsbun"],
+["Pawmot","pawmot"],["Tandemaus","tandemaus"],["Maushold","maushold-family3"],["Maushold (Family of Four)","maushold-family4"],["Fidough","fidough"],["Dachsbun","dachsbun"],
 ["Smoliv","smoliv"],["Dolliv","dolliv"],["Arboliva","arboliva"],["Squawkabilly","squawkabilly-green"],["Squawkabilly Blue","squawkabilly-blue"],["Squawkabilly Yellow","squawkabilly-yellow"]
 ]},
 {n:44,p:[
@@ -1538,6 +1538,7 @@ function formatCellName(name) {
       [/\s*\(Crowned\)/i,'Crowned'],[/\s*\(Hero\)/i,'Hero'],
       [/\s*\(Antique\)/i,'Antique'],[/\s*\(Teal Mask\)/i,'Teal'],
       [/\s*\(Blade\)/i,'Blade'],[/\s*\(Shield\)/i,'Shield'],
+      [/\s*\(Family of Four\)/i,'Family of Four'],
     ];
     for (const [rx, label] of bracketMap) {
       if (rx.test(base)) { base = base.replace(rx, '').trim(); if (label) tag = label; break; }
