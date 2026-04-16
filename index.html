@@ -629,14 +629,19 @@
 #page-shiny .pbar-fill{background:linear-gradient(90deg,#a060e0,#e060c0)}
 #page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
 .bkd-strip { display:flex; gap:8px; padding:6px 0 10px; }
-.bkd-chip { flex:1; min-width:0; background:rgba(255,255,255,0.62); border-radius:10px; padding:8px 10px 7px; }
+.bkd-chip { flex:1; min-width:0; background:rgba(255,255,255,0.62); border-radius:10px; padding:8px 10px 7px; cursor:pointer; border:2px solid transparent; transition:border-color .15s, background .15s; }
+.bkd-chip:hover { background:rgba(255,255,255,0.85); }
+.bkd-chip.active { border-color:#7059B8; background:#fff; }
 .bkd-chip-label { display:block; font-size:8.5px; text-transform:uppercase; letter-spacing:.4px; color:#999; font-weight:400; margin-bottom:5px; }
+.bkd-chip.active .bkd-chip-label { color:#7059B8; font-weight:600; }
 .bkd-chip-stats { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:6px; }
 .bkd-chip-pct { font-size:14px; font-weight:700; color:#1a1a1a; line-height:1; }
 .bkd-chip-sub { font-size:9px; color:#bbb; }
 .bkd-chip-bar { height:4px; background:rgba(0,0,0,0.08); border-radius:3px; overflow:hidden; }
 .bkd-chip-fill { height:100%; background:#1a7a5e; border-radius:3px; transition:width .3s; }
 #page-shiny .bkd-chip { background:rgba(255,255,255,0.45); }
+#page-shiny .bkd-chip.active { border-color:#a060e0; background:#fff; }
+#page-shiny .bkd-chip.active .bkd-chip-label { color:#a060e0; }
 #page-shiny .bkd-chip-fill { background:linear-gradient(90deg,#a060e0,#e060c0); }
 .bkd-expand { background:none; border:none; cursor:pointer; padding:0 0 0 5px; color:#bbb; font-size:10px; line-height:1; transition:transform .2s; flex-shrink:0; }
 .bkd-expand.open { transform:rotate(180deg); }
@@ -945,25 +950,20 @@
     </div>
     <div class="pbar-wrap"><div class="pbar-fill" id="mbar" style="width:0%"></div></div>
     <div class="bkd-strip" id="bkd-strip-dex" style="display:none">
-      <div class="bkd-chip">
-        <span class="bkd-chip-label">National</span>
-        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-national">–</span><span class="bkd-chip-pct" id="bkd-pct-national">0%</span></div>
-        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-national" style="width:0%"></div></div>
+      <div class="bkd-chip" data-filter-dex="dex" data-section="species" onclick="toggleSectionFilter('dex','species',this)">
+        <span class="bkd-chip-label">Species</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-species">–</span><span class="bkd-chip-pct" id="bkd-pct-species">0%</span></div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-species" style="width:0%"></div></div>
       </div>
-      <div class="bkd-chip">
+      <div class="bkd-chip" data-filter-dex="dex" data-section="forms" onclick="toggleSectionFilter('dex','forms',this)">
         <span class="bkd-chip-label">Forms</span>
         <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-forms">–</span><span class="bkd-chip-pct" id="bkd-pct-forms">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-forms" style="width:0%"></div></div>
       </div>
-      <div class="bkd-chip">
-        <span class="bkd-chip-label">Gender</span>
-        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-gender">–</span><span class="bkd-chip-pct" id="bkd-pct-gender">0%</span></div>
-        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gender" style="width:0%"></div></div>
-      </div>
-      <div class="bkd-chip">
-        <span class="bkd-chip-label">G-Max</span>
-        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-gmax">–</span><span class="bkd-chip-pct" id="bkd-pct-gmax">0%</span></div>
-        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gmax" style="width:0%"></div></div>
+      <div class="bkd-chip" data-filter-dex="dex" data-section="females" onclick="toggleSectionFilter('dex','females',this)">
+        <span class="bkd-chip-label">Females</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-females">–</span><span class="bkd-chip-pct" id="bkd-pct-females">0%</span></div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-females" style="width:0%"></div></div>
       </div>
     </div>
     <div class="controls">
@@ -997,337 +997,59 @@
 
 
 <script>
-const APP_VERSION = 'v1.3 · 2026-04-16';
+const APP_VERSION = 'v1.4 · 2026-04-16';
 
 // HOME caught state shim - getCaught('dex') reads from localStorage
 // [display name, pokemondb slug]
 const BD=[
-{n:1,p:[
-["Bulbasaur","bulbasaur"],["Ivysaur","ivysaur"],["Venusaur (M) (Gigantamax)","venusaur"],["Venusaur (F)","venusaur-f"],["Charmander","charmander"],["Charmeleon","charmeleon"],
-["Charizard (Gigantamax)","charizard"],["Squirtle","squirtle"],["Wartortle","wartortle"],["Blastoise (Gigantamax)","blastoise"],["Caterpie","caterpie"],["Metapod","metapod"],
-["Butterfree (M) (Gigantamax)","butterfree"],["Butterfree (F)","butterfree-f"],["Weedle","weedle"],["Kakuna","kakuna"],["Beedrill","beedrill"],["Pidgey","pidgey"],
-["Pidgeotto","pidgeotto"],["Pidgeot","pidgeot"],["Rattata (M)","rattata"],["Alolan Rattata","rattata-alolan"],["Rattata (F)","rattata-f"],["Raticate (M)","raticate"],
-["Alolan Raticate","raticate-alolan"],["Raticate (F)","raticate-f"],["Spearow","spearow"],["Fearow","fearow"],["Ekans","ekans"],["Arbok","arbok"]
-]},
-{n:2,p:[
-["Pikachu (M) (Gigantamax)","pikachu"],["Pikachu Orig Cap","pikachu-original-cap"],["Pikachu Hoenn Cap","pikachu-hoenn-cap"],["Pikachu Sinnoh Cap","pikachu-sinnoh-cap"],["Pikachu Unova Cap","pikachu-unova-cap"],["Pikachu Kalos Cap","pikachu-kalos-cap"],
-["Pikachu Alola Cap","pikachu-alola-cap"],["Pikachu Partner Cap","pikachu-partner-cap"],["Pikachu World Cap","pikachu-world-cap"],["Pikachu (F)","pikachu-f"],["Raichu (M)","raichu"],["Alolan Raichu","raichu-alolan"],
-["Raichu (F)","raichu-f"],["Sandshrew","sandshrew"],["Alolan Sandshrew","sandshrew-alolan"],["Sandslash","sandslash"],["Alolan Sandslash","sandslash-alolan"],["Nidoran♀","nidoran-f"],
-["Nidorina","nidorina"],["Nidoqueen","nidoqueen"],["Nidoran♂","nidoran-m"],["Nidorino","nidorino"],["Nidoking","nidoking"],["Clefairy","clefairy"],
-["Clefable","clefable"],["Vulpix","vulpix"],["Alolan Vulpix","vulpix-alolan"],["Ninetales","ninetales"],["Alolan Ninetales","ninetales-alolan"],["Jigglypuff","jigglypuff"]
-]},
-{n:3,p:[
-["Wigglytuff","wigglytuff"],["Zubat (M)","zubat"],["Zubat (F)","zubat-f"],["Golbat (M)","golbat"],["Golbat (F)","golbat-f"],["Oddish","oddish"],
-["Gloom (M)","gloom"],["Gloom (F)","gloom-f"],["Vileplume (M)","vileplume"],["Vileplume (F)","vileplume-f"],["Paras","paras"],["Parasect","parasect"],
-["Venonat","venonat"],["Venomoth","venomoth"],["Diglett","diglett"],["Alolan Diglett","diglett-alolan"],["Dugtrio","dugtrio"],["Alolan Dugtrio","dugtrio-alolan"],
-["Meowth (Gigantamax)","meowth"],["Alolan Meowth","meowth-alolan"],["Galarian Meowth","meowth-galarian"],["Persian","persian"],["Alolan Persian","persian-alolan"],["Psyduck","psyduck"],
-["Golduck","golduck"],["Mankey","mankey"],["Primeape","primeape"],["Growlithe","growlithe"],["Hisuian Growlithe","growlithe-hisuian"],["Arcanine","arcanine"]
-]},
-{n:4,p:[
-["Hisuian Arcanine","arcanine-hisuian"],["Poliwag","poliwag"],["Poliwhirl","poliwhirl"],["Poliwrath","poliwrath"],["Abra","abra"],["Kadabra (M)","kadabra"],
-["Kadabra (F)","kadabra-f"],["Alakazam (M)","alakazam"],["Alakazam (F)","alakazam-f"],["Machop","machop"],["Machoke","machoke"],["Machamp (Gigantamax)","machamp"],
-["Bellsprout","bellsprout"],["Weepinbell","weepinbell"],["Victreebel","victreebel"],["Tentacool","tentacool"],["Tentacruel","tentacruel"],["Geodude","geodude"],
-["Alolan Geodude","geodude-alolan"],["Graveler","graveler"],["Alolan Graveler","graveler-alolan"],["Golem","golem"],["Alolan Golem","golem-alolan"],["Ponyta","ponyta"],
-["Galarian Ponyta","ponyta-galarian"],["Rapidash","rapidash"],["Galarian Rapidash","rapidash-galarian"],["Slowpoke","slowpoke"],["Galarian Slowpoke","slowpoke-galarian"],["Slowbro","slowbro"]
-]},
-{n:5,p:[
-["Galarian Slowbro","slowbro-galarian"],["Magnemite","magnemite"],["Magneton","magneton"],["Farfetch'd","farfetchd"],["Galarian Farfetch'd","farfetchd-galarian"],["Doduo (M)","doduo"],
-["Doduo (F)","doduo-f"],["Dodrio (M)","dodrio"],["Dodrio (F)","dodrio-f"],["Seel","seel"],["Dewgong","dewgong"],["Grimer","grimer"],
-["Alolan Grimer","grimer-alolan"],["Muk","muk"],["Alolan Muk","muk-alolan"],["Shellder","shellder"],["Cloyster","cloyster"],["Gastly","gastly"],
-["Haunter","haunter"],["Gengar (Gigantamax)","gengar"],["Onix","onix"],["Drowzee","drowzee"],["Hypno (M)","hypno"],["Hypno (F)","hypno-f"],
-["Krabby","krabby"],["Kingler (Gigantamax)","kingler"],["Voltorb","voltorb"],["Hisuian Voltorb","voltorb-hisuian"],["Electrode","electrode"],["Hisuian Electrode","electrode-hisuian"]
-]},
-{n:6,p:[
-["Exeggcute","exeggcute"],["Exeggutor","exeggutor"],["Alolan Exeggutor","exeggutor-alolan"],["Cubone","cubone"],["Marowak","marowak"],["Alolan Marowak","marowak-alolan"],
-["Hitmonlee","hitmonlee"],["Hitmonchan","hitmonchan"],["Lickitung","lickitung"],["Koffing","koffing"],["Weezing","weezing"],["Galarian Weezing","weezing-galarian"],
-["Rhyhorn (M)","rhyhorn"],["Rhyhorn (F)","rhyhorn-f"],["Rhydon (M)","rhydon"],["Rhydon (F)","rhydon-f"],["Chansey","chansey"],["Tangela","tangela"],
-["Kangaskhan","kangaskhan"],["Horsea","horsea"],["Seadra","seadra"],["Goldeen (M)","goldeen"],["Goldeen (F)","goldeen-f"],["Seaking (M)","seaking"],
-["Seaking (F)","seaking-f"],["Staryu","staryu"],["Starmie","starmie"],["Mr. Mime","mr-mime"],["Galarian Mr. Mime","mr-mime-galarian"],["Scyther (M)","scyther"]
-]},
-{n:7,p:[
-["Scyther (F)","scyther-f"],["Jynx","jynx"],["Electabuzz","electabuzz"],["Magmar","magmar"],["Pinsir","pinsir"],["Tauros","tauros"],
-["Paldean Tauros","tauros-paldean"],["Tauros Blaze","tauros-paldean-blaze"],["Tauros Aqua","tauros-paldean-aqua"],["Magikarp (M)","magikarp"],["Magikarp (F)","magikarp-f"],["Gyarados (M)","gyarados"],
-["Gyarados (F)","gyarados-f"],["Lapras (Gigantamax)","lapras"],["Ditto","ditto"],["Eevee (M) (Gigantamax)","eevee"],["Eevee (F)","eevee-f"],["Vaporeon","vaporeon"],
-["Jolteon","jolteon"],["Flareon","flareon"],["Porygon","porygon"],["Omanyte","omanyte"],["Omastar","omastar"],["Kabuto","kabuto"],
-["Kabutops","kabutops"],["Aerodactyl","aerodactyl"],["Snorlax (Gigantamax)","snorlax"],["Articuno","articuno"],["Galarian Articuno","articuno-galarian"],["Zapdos","zapdos"]
-]},
-{n:8,p:[
-["Galarian Zapdos","zapdos-galarian"],["Moltres","moltres"],["Galarian Moltres","moltres-galarian"],["Dratini","dratini"],["Dragonair","dragonair"],["Dragonite","dragonite"],
-["Mewtwo","mewtwo"],["Mew","mew"],["Chikorita","chikorita"],["Bayleef","bayleef"],["Meganium (M)","meganium"],["Meganium (F)","meganium-f"],
-["Cyndaquil","cyndaquil"],["Quilava","quilava"],["Typhlosion","typhlosion"],["Hisuian Typhlosion","typhlosion-hisuian"],["Totodile","totodile"],["Croconaw","croconaw"],
-["Feraligatr","feraligatr"],["Sentret","sentret"],["Furret","furret"],["Hoothoot","hoothoot"],["Noctowl","noctowl"],["Ledyba (M)","ledyba"],
-["Ledyba (F)","ledyba-f"],["Ledian (M)","ledian"],["Ledian (F)","ledian-f"],["Spinarak","spinarak"],["Ariados","ariados"],["Crobat","crobat"]
-]},
-{n:9,p:[
-["Chinchou","chinchou"],["Lanturn","lanturn"],["Pichu","pichu"],["Cleffa","cleffa"],["Igglybuff","igglybuff"],["Togepi","togepi"],
-["Togetic","togetic"],["Natu","natu"],["Xatu (M)","xatu"],["Xatu (F)","xatu-f"],["Mareep","mareep"],["Flaaffy","flaaffy"],
-["Ampharos","ampharos"],["Bellossom","bellossom"],["Marill","marill"],["Azumarill","azumarill"],["Sudowoodo (M)","sudowoodo"],["Sudowoodo (F)","sudowoodo-f"],
-["Politoed (M)","politoed"],["Politoed (F)","politoed-f"],["Hoppip","hoppip"],["Skiploom","skiploom"],["Jumpluff","jumpluff"],["Aipom (M)","aipom"],
-["Aipom (F)","aipom-f"],["Sunkern","sunkern"],["Sunflora","sunflora"],["Yanma","yanma"],["Wooper (M)","wooper"],["Paldean Wooper","wooper-paldean"]
-]},
-{n:10,p:[
-["Wooper (F)","wooper-f"],["Quagsire (M)","quagsire"],["Quagsire (F)","quagsire-f"],["Espeon","espeon"],["Umbreon","umbreon"],["Murkrow (M)","murkrow"],
-["Murkrow (F)","murkrow-f"],["Slowking","slowking"],["Galarian Slowking","slowking-galarian"],["Misdreavus","misdreavus"],["Unown A","unown"],["Unown B","unown-b"],
-["Unown C","unown-c"],["Unown D","unown-d"],["Unown E","unown-e"],["Unown F","unown-f"],["Unown G","unown-g"],["Unown H","unown-h"],
-["Unown I","unown-i"],["Unown J","unown-j"],["Unown K","unown-k"],["Unown L","unown-l"],["Unown M","unown-m"],["Unown N","unown-n"],
-["Unown O","unown-o"],["Unown P","unown-p"],["Unown Q","unown-q"],["Unown R","unown-r"],["Unown S","unown-s"],["Unown T","unown-t"]
-]},
-{n:11,p:[
-["Unown U","unown-u"],["Unown V","unown-v"],["Unown W","unown-w"],["Unown X","unown-x"],["Unown Y","unown-y"],["Unown Z","unown-z"],
-["Unown !","unown-exclamation"],["Unown ?","unown-question"],["Wobbuffet (M)","wobbuffet"],["Wobbuffet (F)","wobbuffet-f"],["Girafarig (M)","girafarig"],["Girafarig (F)","girafarig-f"],
-["Pineco","pineco"],["Forretress","forretress"],["Dunsparce","dunsparce"],["Gligar (M)","gligar"],["Gligar (F)","gligar-f"],["Steelix (M)","steelix"],
-["Steelix (F)","steelix-f"],["Snubbull","snubbull"],["Granbull","granbull"],["Qwilfish","qwilfish"],["Hisuian Qwilfish","qwilfish-hisuian"],["Scizor (M)","scizor"],
-["Scizor (F)","scizor-f"],["Shuckle","shuckle"],["Heracross (M)","heracross"],["Heracross (F)","heracross-f"],["Sneasel (M)","sneasel"],["Hisuian Sneasel (M)","sneasel-hisuian"]
-]},
-{n:12,p:[
-["Sneasel (F)","sneasel-f"],["Hisuian Sneasel (F)","sneasel-hisui-f"],["Teddiursa","teddiursa"],["Ursaring (M)","ursaring"],["Ursaring (F)","ursaring-f"],["Slugma","slugma"],
-["Magcargo","magcargo"],["Swinub","swinub"],["Piloswine (M)","piloswine"],["Piloswine (F)","piloswine-f"],["Corsola","corsola"],["Galarian Corsola","corsola-galarian"],
-["Remoraid","remoraid"],["Octillery (M)","octillery"],["Octillery (F)","octillery-f"],["Delibird","delibird"],["Mantine","mantine"],["Skarmory","skarmory"],
-["Houndour","houndour"],["Houndoom (M)","houndoom"],["Houndoom (F)","houndoom-f"],["Kingdra","kingdra"],["Phanpy","phanpy"],["Donphan (M)","donphan"],
-["Donphan (F)","donphan-f"],["Porygon2","porygon2"],["Stantler","stantler"],["Smeargle","smeargle"],["Tyrogue","tyrogue"],["Hitmontop","hitmontop"]
-]},
-{n:13,p:[
-["Smoochum","smoochum"],["Elekid","elekid"],["Magby","magby"],["Miltank","miltank"],["Blissey","blissey"],["Raikou","raikou"],
-["Entei","entei"],["Suicune","suicune"],["Larvitar","larvitar"],["Pupitar","pupitar"],["Tyranitar","tyranitar"],["Lugia","lugia"],
-["Ho-Oh","ho-oh"],["Celebi","celebi"],["Treecko","treecko"],["Grovyle","grovyle"],["Sceptile","sceptile"],["Torchic (M)","torchic"],
-["Torchic (F)","torchic-f"],["Combusken (M)","combusken"],["Combusken (F)","combusken-f"],["Blaziken (M)","blaziken"],["Blaziken (F)","blaziken-f"],["Mudkip","mudkip"],
-["Marshtomp","marshtomp"],["Swampert","swampert"],["Poochyena","poochyena"],["Mightyena","mightyena"],["Zigzagoon","zigzagoon"],["Galarian Zigzagoon","zigzagoon-galarian"]
-]},
-{n:14,p:[
-["Linoone","linoone"],["Galarian Linoone","linoone-galarian"],["Wurmple","wurmple"],["Silcoon","silcoon"],["Beautifly (M)","beautifly"],["Beautifly (F)","beautifly-f"],
-["Cascoon","cascoon"],["Dustox (M)","dustox"],["Dustox (F)","dustox-f"],["Lotad","lotad"],["Lombre","lombre"],["Ludicolo (M)","ludicolo"],
-["Ludicolo (F)","ludicolo-f"],["Seedot","seedot"],["Nuzleaf (M)","nuzleaf"],["Nuzleaf (F)","nuzleaf-f"],["Shiftry (M)","shiftry"],["Shiftry (F)","shiftry-f"],
-["Taillow","taillow"],["Swellow","swellow"],["Wingull","wingull"],["Pelipper","pelipper"],["Ralts","ralts"],["Kirlia","kirlia"],
-["Gardevoir","gardevoir"],["Surskit","surskit"],["Masquerain","masquerain"],["Shroomish","shroomish"],["Breloom","breloom"],["Slakoth","slakoth"]
-]},
-{n:15,p:[
-["Vigoroth","vigoroth"],["Slaking","slaking"],["Nincada","nincada"],["Ninjask","ninjask"],["Shedinja","shedinja"],["Whismur","whismur"],
-["Loudred","loudred"],["Exploud","exploud"],["Makuhita","makuhita"],["Hariyama","hariyama"],["Azurill","azurill"],["Nosepass","nosepass"],
-["Skitty","skitty"],["Delcatty","delcatty"],["Sableye","sableye"],["Mawile","mawile"],["Aron","aron"],["Lairon","lairon"],
-["Aggron","aggron"],["Meditite (M)","meditite"],["Meditite (F)","meditite-f"],["Medicham (M)","medicham"],["Medicham (F)","medicham-f"],["Electrike","electrike"],
-["Manectric","manectric"],["Plusle","plusle"],["Minun","minun"],["Volbeat","volbeat"],["Illumise","illumise"],["Roselia (M)","roselia"]
-]},
-{n:16,p:[
-["Roselia (F)","roselia-f"],["Gulpin (M)","gulpin"],["Gulpin (F)","gulpin-f"],["Swalot (M)","swalot"],["Swalot (F)","swalot-f"],["Carvanha","carvanha"],
-["Sharpedo","sharpedo"],["Wailmer","wailmer"],["Wailord","wailord"],["Numel (M)","numel"],["Numel (F)","numel-f"],["Camerupt (M)","camerupt"],
-["Camerupt (F)","camerupt-f"],["Torkoal","torkoal"],["Spoink","spoink"],["Grumpig","grumpig"],["Spinda","spinda"],["Trapinch","trapinch"],
-["Vibrava","vibrava"],["Flygon","flygon"],["Cacnea","cacnea"],["Cacturne (M)","cacturne"],["Cacturne (F)","cacturne-f"],["Swablu","swablu"],
-["Altaria","altaria"],["Zangoose","zangoose"],["Seviper","seviper"],["Lunatone","lunatone"],["Solrock","solrock"],["Barboach","barboach"]
-]},
-{n:17,p:[
-["Whiscash","whiscash"],["Corphish","corphish"],["Crawdaunt","crawdaunt"],["Baltoy","baltoy"],["Claydol","claydol"],["Lileep","lileep"],
-["Cradily","cradily"],["Anorith","anorith"],["Armaldo","armaldo"],["Feebas","feebas"],["Milotic (M)","milotic"],["Milotic (F)","milotic-f"],
-["Castform","castform"],["Kecleon","kecleon"],["Shuppet","shuppet"],["Banette","banette"],["Duskull","duskull"],["Dusclops","dusclops"],
-["Tropius","tropius"],["Chimecho","chimecho"],["Absol","absol"],["Wynaut","wynaut"],["Snorunt","snorunt"],["Glalie","glalie"],
-["Spheal","spheal"],["Sealeo","sealeo"],["Walrein","walrein"],["Clamperl","clamperl"],["Huntail","huntail"],["Gorebyss","gorebyss"]
-]},
-{n:18,p:[
-["Relicanth (M)","relicanth"],["Relicanth (F)","relicanth-f"],["Luvdisc","luvdisc"],["Bagon","bagon"],["Shelgon","shelgon"],["Salamence","salamence"],
-["Beldum","beldum"],["Metang","metang"],["Metagross","metagross"],["Regirock","regirock"],["Regice","regice"],["Registeel","registeel"],
-["Latias","latias"],["Latios","latios"],["Kyogre","kyogre"],["Groudon","groudon"],["Rayquaza","rayquaza"],["Jirachi","jirachi"],
-["Deoxys","deoxys-normal"],["Deoxys Attack","deoxys-attack"],["Deoxys Defense","deoxys-defense"],["Deoxys Speed","deoxys-speed"],["Turtwig","turtwig"],["Grotle","grotle"],
-["Torterra","torterra"],["Chimchar","chimchar"],["Monferno","monferno"],["Infernape","infernape"],["Piplup","piplup"],["Prinplup","prinplup"]
-]},
-{n:19,p:[
-["Empoleon","empoleon"],["Starly (M)","starly"],["Starly (F)","starly-f"],["Staravia (M)","staravia"],["Staravia (F)","staravia-f"],["Staraptor (M)","staraptor"],
-["Staraptor (F)","staraptor-f"],["Bidoof (M)","bidoof"],["Bidoof (F)","bidoof-f"],["Bibarel (M)","bibarel"],["Bibarel (F)","bibarel-f"],["Kricketot (M)","kricketot"],
-["Kricketot (F)","kricketot-f"],["Kricketune (M)","kricketune"],["Kricketune (F)","kricketune-f"],["Shinx (M)","shinx"],["Shinx (F)","shinx-f"],["Luxio (M)","luxio"],
-["Luxio (F)","luxio-f"],["Luxray (M)","luxray"],["Luxray (F)","luxray-f"],["Budew","budew"],["Roserade (M)","roserade"],["Roserade (F)","roserade-f"],
-["Cranidos","cranidos"],["Rampardos","rampardos"],["Shieldon","shieldon"],["Bastiodon","bastiodon"],["Burmy","burmy"],["Burmy Sandy","burmy-sandy"]
-]},
-{n:20,p:[
-["Burmy Trash","burmy-trash"],["Wormadam","wormadam"],["Wormadam Sandy","wormadam-sandy"],["Wormadam Trash","wormadam-trash"],["Mothim","mothim"],["Combee (M)","combee"],
-["Combee (F)","combee-f"],["Vespiquen","vespiquen"],["Pachirisu (M)","pachirisu"],["Pachirisu (F)","pachirisu-f"],["Buizel (M)","buizel"],["Buizel (F)","buizel-f"],
-["Floatzel (M)","floatzel"],["Floatzel (F)","floatzel-f"],["Cherubi","cherubi"],["Cherrim","cherrim"],["Shellos","shellos"],["Shellos East","shellos-east"],
-["Gastrodon","gastrodon"],["Gastrodon East","gastrodon-east"],["Ambipom (M)","ambipom"],["Ambipom (F)","ambipom-f"],["Drifloon","drifloon"],["Drifblim","drifblim"],
-["Buneary","buneary"],["Lopunny","lopunny"],["Mismagius","mismagius"],["Honchkrow","honchkrow"],["Glameow","glameow"],["Purugly","purugly"]
-]},
-{n:21,p:[
-["Chingling","chingling"],["Stunky","stunky"],["Skuntank","skuntank"],["Bronzor","bronzor"],["Bronzong","bronzong"],["Bonsly","bonsly"],
-["Mime Jr.","mime-jr"],["Happiny","happiny"],["Chatot","chatot"],["Spiritomb","spiritomb"],["Gible (M)","gible"],["Gible (F)","gible-f"],
-["Gabite (M)","gabite"],["Gabite (F)","gabite-f"],["Garchomp (M)","garchomp"],["Garchomp (F)","garchomp-f"],["Munchlax","munchlax"],["Riolu","riolu"],
-["Lucario","lucario"],["Hippopotas (M)","hippopotas"],["Hippopotas (F)","hippopotas-f"],["Hippowdon (M)","hippowdon"],["Hippowdon (F)","hippowdon-f"],["Skorupi","skorupi"],
-["Drapion","drapion"],["Croagunk (M)","croagunk"],["Croagunk (F)","croagunk-f"],["Toxicroak (M)","toxicroak"],["Toxicroak (F)","toxicroak-f"],["Carnivine","carnivine"]
-]},
-{n:22,p:[
-["Finneon (M)","finneon"],["Finneon (F)","finneon-f"],["Lumineon (M)","lumineon"],["Lumineon (F)","lumineon-f"],["Mantyke","mantyke"],["Snover (M)","snover"],
-["Snover (F)","snover-f"],["Abomasnow (M)","abomasnow"],["Abomasnow (F)","abomasnow-f"],["Weavile (M)","weavile"],["Weavile (F)","weavile-f"],["Magnezone","magnezone"],
-["Lickilicky","lickilicky"],["Rhyperior (M)","rhyperior"],["Rhyperior (F)","rhyperior-f"],["Tangrowth (M)","tangrowth"],["Tangrowth (F)","tangrowth-f"],["Electivire","electivire"],
-["Magmortar","magmortar"],["Togekiss","togekiss"],["Yanmega","yanmega"],["Leafeon","leafeon"],["Glaceon","glaceon"],["Gliscor","gliscor"],
-["Mamoswine (M)","mamoswine"],["Mamoswine (F)","mamoswine-f"],["Porygon-Z","porygon-z"],["Gallade","gallade"],["Probopass","probopass"],["Dusknoir","dusknoir"]
-]},
-{n:23,p:[
-["Froslass","froslass"],["Rotom","rotom"],["Rotom Heat","rotom-heat"],["Rotom Wash","rotom-wash"],["Rotom Frost","rotom-frost"],["Rotom Fan","rotom-fan"],
-["Rotom Mow","rotom-mow"],["Uxie","uxie"],["Mesprit","mesprit"],["Azelf","azelf"],["Dialga","dialga"],["Palkia","palkia"],
-["Heatran","heatran"],["Regigigas","regigigas"],["Giratina","giratina-altered"],["Cresselia","cresselia"],["Phione","phione"],["Manaphy","manaphy"],
-["Darkrai","darkrai"],["Shaymin","shaymin"],["Shaymin Sky","shaymin-sky"],["Arceus","arceus"],["Victini","victini"],["Snivy","snivy"],
-["Servine","servine"],["Serperior","serperior"],["Tepig","tepig"],["Pignite","pignite"],["Emboar","emboar"],["Oshawott","oshawott"]
-]},
-{n:24,p:[
-["Dewott","dewott"],["Samurott","samurott"],["Hisuian Samurott","samurott-hisuian"],["Patrat","patrat"],["Watchog","watchog"],["Lillipup","lillipup"],
-["Herdier","herdier"],["Stoutland","stoutland"],["Purrloin","purrloin"],["Liepard","liepard"],["Pansage","pansage"],["Simisage","simisage"],
-["Pansear","pansear"],["Simisear","simisear"],["Panpour","panpour"],["Simipour","simipour"],["Munna","munna"],["Musharna","musharna"],
-["Pidove","pidove"],["Tranquill","tranquill"],["Unfezant (M)","unfezant"],["Unfezant (F)","unfezant-f"],["Blitzle","blitzle"],["Zebstrika","zebstrika"],
-["Roggenrola","roggenrola"],["Boldore","boldore"],["Gigalith","gigalith"],["Woobat","woobat"],["Swoobat","swoobat"],["Drilbur","drilbur"]
-]},
-{n:25,p:[
-["Excadrill","excadrill"],["Audino","audino"],["Timburr","timburr"],["Gurdurr","gurdurr"],["Conkeldurr","conkeldurr"],["Tympole","tympole"],
-["Palpitoad","palpitoad"],["Seismitoad","seismitoad"],["Throh","throh"],["Sawk","sawk"],["Sewaddle","sewaddle"],["Swadloon","swadloon"],
-["Leavanny","leavanny"],["Venipede","venipede"],["Whirlipede","whirlipede"],["Scolipede","scolipede"],["Cottonee","cottonee"],["Whimsicott","whimsicott"],
-["Petilil","petilil"],["Lilligant","lilligant"],["Hisuian Lilligant","lilligant-hisuian"],["Basculin Red-Striped","basculin"],["Basculin Blue-Striped","basculin-blue-striped"],["Basculin White-Striped","basculin-white-striped"],
-["Sandile","sandile"],["Krokorok","krokorok"],["Krookodile","krookodile"],["Darumaka","darumaka"],["Galarian Darumaka","darumaka-galarian"],["Darmanitan","darmanitan"]
-]},
-{n:26,p:[
-["Galarian Darmanitan","darmanitan-galarian-standard"],["Maractus","maractus"],["Dwebble","dwebble"],["Crustle","crustle"],["Scraggy","scraggy"],["Scrafty","scrafty"],
-["Sigilyph","sigilyph"],["Yamask","yamask"],["Galarian Yamask","yamask-galarian"],["Cofagrigus","cofagrigus"],["Tirtouga","tirtouga"],["Carracosta","carracosta"],
-["Archen","archen"],["Archeops","archeops"],["Trubbish","trubbish"],["Garbodor (Gigantamax)","garbodor"],["Zorua","zorua"],["Hisuian Zorua","zorua-hisuian"],
-["Zoroark","zoroark"],["Hisuian Zoroark","zoroark-hisuian"],["Minccino","minccino"],["Cinccino","cinccino"],["Gothita","gothita"],["Gothorita","gothorita"],
-["Gothitelle","gothitelle"],["Solosis","solosis"],["Duosion","duosion"],["Reuniclus","reuniclus"],["Ducklett","ducklett"],["Swanna","swanna"]
-]},
-{n:27,p:[
-["Vanillite","vanillite"],["Vanillish","vanillish"],["Vanilluxe","vanilluxe"],["Deerling","deerling"],["Deerling Summer","deerling-summer"],["Deerling Autumn","deerling-autumn"],
-["Deerling Winter","deerling-winter"],["Sawsbuck","sawsbuck"],["Sawsbuck Summer","sawsbuck-summer"],["Sawsbuck Autumn","sawsbuck-autumn"],["Sawsbuck Winter","sawsbuck-winter"],["Emolga","emolga"],
-["Karrablast","karrablast"],["Escavalier","escavalier"],["Foongus","foongus"],["Amoonguss","amoonguss"],["Frillish (M)","frillish"],["Frillish (F)","frillish-f"],
-["Jellicent (M)","jellicent"],["Jellicent (F)","jellicent-f"],["Alomomola","alomomola"],["Joltik","joltik"],["Galvantula","galvantula"],["Ferroseed","ferroseed"],
-["Ferrothorn","ferrothorn"],["Klink","klink"],["Klang","klang"],["Klinklang","klinklang"],["Tynamo","tynamo"],["Eelektrik","eelektrik"]
-]},
-{n:28,p:[
-["Eelektross","eelektross"],["Elgyem","elgyem"],["Beheeyem","beheeyem"],["Litwick","litwick"],["Lampent","lampent"],["Chandelure","chandelure"],
-["Axew","axew"],["Fraxure","fraxure"],["Haxorus","haxorus"],["Cubchoo","cubchoo"],["Beartic","beartic"],["Cryogonal","cryogonal"],
-["Shelmet","shelmet"],["Accelgor","accelgor"],["Stunfisk","stunfisk"],["Galarian Stunfisk","stunfisk-galarian"],["Mienfoo","mienfoo"],["Mienshao","mienshao"],
-["Druddigon","druddigon"],["Golett","golett"],["Golurk","golurk"],["Pawniard","pawniard"],["Bisharp","bisharp"],["Bouffalant","bouffalant"],
-["Rufflet","rufflet"],["Braviary","braviary"],["Hisuian Braviary","braviary-hisuian"],["Vullaby","vullaby"],["Mandibuzz","mandibuzz"],["Heatmor","heatmor"]
-]},
-{n:29,p:[
-["Durant","durant"],["Deino","deino"],["Zweilous","zweilous"],["Hydreigon","hydreigon"],["Larvesta","larvesta"],["Volcarona","volcarona"],
-["Cobalion","cobalion"],["Terrakion","terrakion"],["Virizion","virizion"],["Tornadus","tornadus-incarnate"],["Tornadus Therian","tornadus-therian"],["Thundurus","thundurus-incarnate"],
-["Thundurus Therian","thundurus-therian"],["Reshiram","reshiram"],["Zekrom","zekrom"],["Landorus","landorus-incarnate"],["Landorus Therian","landorus-therian"],["Kyurem","kyurem"],
-["Keldeo","keldeo"],["Keldeo Resolute","keldeo-resolute"],["Meloetta","meloetta-aria"],["Genesect","genesect"],["Chespin","chespin"],["Quilladin","quilladin"],
-["Chesnaught","chesnaught"],["Fennekin","fennekin"],["Braixen","braixen"],["Delphox","delphox"],["Froakie","froakie"],["Frogadier","frogadier"]
-]},
-{n:30,p:[
-["Greninja","greninja"],["Greninja Battle Bond","greninja"],["Bunnelby","bunnelby"],["Diggersby","diggersby"],["Fletchling","fletchling"],["Fletchinder","fletchinder"],
-["Talonflame","talonflame"],["Scatterbug","scatterbug"],["Spewpa","spewpa"],["Vivillon","vivillon"],["Vivillon Polar","vivillon-polar"],["Vivillon Tundra","vivillon-tundra"],
-["Vivillon Continental","vivillon-continental"],["Vivillon Garden","vivillon-garden"],["Vivillon Elegant","vivillon-elegant"],["Vivillon Icy Snow","vivillon-icy-snow"],["Vivillon Modern","vivillon-modern"],["Vivillon Marine","vivillon-marine"],
-["Vivillon Archipelago","vivillon-archipelago"],["Vivillon High Plains","vivillon-high-plains"],["Vivillon Sandstorm","vivillon-sandstorm"],["Vivillon River","vivillon-river"],["Vivillon Monsoon","vivillon-monsoon"],["Vivillon Savanna","vivillon-savanna"],
-["Vivillon Sun","vivillon-sun"],["Vivillon Ocean","vivillon-ocean"],["Vivillon Jungle","vivillon-jungle"],["Vivillon Fancy","vivillon-fancy"],["Vivillon Poké Ball","vivillon-poke-ball"],["Litleo","litleo"]
-]},
-{n:31,p:[
-["Pyroar (M)","pyroar"],["Pyroar (F)","pyroar-f"],["Flabébé","flabebe"],["Flabébé Yellow","flabebe-yellow"],["Flabébé Orange","flabebe-orange"],["Flabébé Blue","flabebe-blue"],
-["Flabébé White","flabebe-white"],["Floette","floette"],["Floette Yellow","floette-yellow"],["Floette Orange","floette-orange"],["Floette Blue","floette-blue"],["Floette White","floette-white"],
-["Floette Eternal","floette-eternal"],["Florges","florges"],["Florges Yellow","florges-yellow"],["Florges Orange","florges-orange"],["Florges Blue","florges-blue"],["Florges White","florges-white"],
-["Skiddo","skiddo"],["Gogoat","gogoat"],["Pancham","pancham"],["Pangoro","pangoro"],["Furfrou","furfrou"],["Furfrou Heart","furfrou-heart"],
-["Furfrou Star","furfrou-star"],["Furfrou Diamond","furfrou-diamond"],["Furfrou Deputante","furfrou-debutante"],["Furfrou Matron","furfrou-matron"],["Furfrou Dandy","furfrou-dandy"],["Furfrou La Reine","furfrou-la-reine"]
-]},
-{n:32,p:[
-["Furfrou Kabuki","furfrou-kabuki"],["Furfrou Pharaoh","furfrou-pharaoh"],["Espurr","espurr"],["Meowstic (M)","meowstic-m"],["Meowstic (F)","meowstic-f"],["Honedge","honedge"],
-["Doublade","doublade"],["Aegislash","aegislash-shield"],["Spritzee","spritzee"],["Aromatisse","aromatisse"],["Swirlix","swirlix"],["Slurpuff","slurpuff"],
-["Inkay","inkay"],["Malamar","malamar"],["Binacle","binacle"],["Barbaracle","barbaracle"],["Skrelp","skrelp"],["Dragalge","dragalge"],
-["Clauncher","clauncher"],["Clawitzer","clawitzer"],["Helioptile","helioptile"],["Heliolisk","heliolisk"],["Tyrunt","tyrunt"],["Tyrantrum","tyrantrum"],
-["Amaura","amaura"],["Aurorus","aurorus"],["Sylveon","sylveon"],["Hawlucha","hawlucha"],["Dedenne","dedenne"],["Carbink","carbink"]
-]},
-{n:33,p:[
-["Goomy","goomy"],["Sliggoo","sliggoo"],["Hisuian Sliggoo","sliggoo-hisuian"],["Goodra","goodra"],["Hisuian Goodra","goodra-hisuian"],["Klefki","klefki"],
-["Phantump","phantump"],["Trevenant","trevenant"],["Pumpkaboo","pumpkaboo"],["Pumpkaboo Small","pumpkaboo-small"],["Pumpkaboo Large","pumpkaboo-large"],["Pumpkaboo Super","pumpkaboo-super"],
-["Gourgeist","gourgeist"],["Gourgeist Small","gourgeist-small"],["Gourgeist Large","gourgeist-large"],["Gourgeist Super","gourgeist-super"],["Bergmite","bergmite"],["Avalugg","avalugg"],
-["Hisuian Avalugg","avalugg-hisuian"],["Noibat","noibat"],["Noivern","noivern"],["Xerneas","xerneas"],["Yveltal","yveltal"],["Zygarde 10%","zygarde-10"],
-["Zygarde 50%","zygarde-50"],["Zygarde 10% Power Construct","zygarde-10"],["Zygarde 50% Power Construct","zygarde-50"],["Diancie","diancie"],["Hoopa","hoopa-confined"],["Hoopa Unbound","hoopa-unbound"]
-]},
-{n:34,p:[
-["Volcanion","volcanion"],["Rowlet","rowlet"],["Dartrix","dartrix"],["Decidueye","decidueye"],["Hisuian Decidueye","decidueye-hisuian"],["Litten","litten"],
-["Torracat","torracat"],["Incineroar","incineroar"],["Popplio","popplio"],["Brionne","brionne"],["Primarina","primarina"],["Pikipek","pikipek"],
-["Trumbeak","trumbeak"],["Toucannon","toucannon"],["Yungoos","yungoos"],["Gumshoos","gumshoos"],["Grubbin","grubbin"],["Charjabug","charjabug"],
-["Vikavolt","vikavolt"],["Crabrawler","crabrawler"],["Crabominable","crabominable"],["Oricorio","oricorio-baile"],["Oricorio Pom-Pom","oricorio-pom-pom"],["Oricorio P'au","oricorio-pau"],
-["Oricorio Sensu","oricorio-sensu"],["Cutiefly","cutiefly"],["Ribombee","ribombee"],["Rockruff","rockruff"],["Rockruff Own Tempo","rockruff-own-tempo"],["Lycanroc","lycanroc-midday"]
-]},
-{n:35,p:[
-["Lycanroc Midnight","lycanroc-midnight"],["Lycanroc Dusk","lycanroc-dusk"],["Wishiwashi","wishiwashi"],["Mareanie","mareanie"],["Toxapex","toxapex"],["Mudbray","mudbray"],
-["Mudsdale","mudsdale"],["Dewpider","dewpider"],["Araquanid","araquanid"],["Fomantis","fomantis"],["Lurantis","lurantis"],["Morelull","morelull"],
-["Shiinotic","shiinotic"],["Salandit","salandit"],["Salazzle","salazzle"],["Stufful","stufful"],["Bewear","bewear"],["Bounsweet","bounsweet"],
-["Steenee","steenee"],["Tsareena","tsareena"],["Comfey","comfey"],["Oranguru","oranguru"],["Passimian","passimian"],["Wimpod","wimpod"],
-["Golisopod","golisopod"],["Sandygast","sandygast"],["Palossand","palossand"],["Pyukumuku","pyukumuku"],["Type: Null","type-null"],["Silvally","silvally"]
-]},
-{n:36,p:[
-["Minior","minior-meteor"],["Minior Orange","minior-orange-core"],["Minior Yellow","minior-yellow-core"],["Minior Green","minior-green-core"],["Minior Blue","minior-blue-core"],["Minior Indigo","minior-indigo-core"],
-["Minior Violet","minior-violet-core"],["Komala","komala"],["Turtonator","turtonator"],["Togedemaru","togedemaru"],["Mimikyu","mimikyu"],["Bruxish","bruxish"],
-["Drampa","drampa"],["Dhelmise","dhelmise"],["Jangmo-o","jangmo-o"],["Hakamo-o","hakamo-o"],["Kommo-o","kommo-o"],["Tapu Koko","tapu-koko"],
-["Tapu Lele","tapu-lele"],["Tapu Bulu","tapu-bulu"],["Tapu Fini","tapu-fini"],["Cosmog","cosmog"],["Cosmoem","cosmoem"],["Solgaleo","solgaleo"],
-["Lunala","lunala"],["Nihilego","nihilego"],["Buzzwole","buzzwole"],["Pheromosa","pheromosa"],["Xurkitree","xurkitree"],["Celesteela","celesteela"]
-]},
-{n:37,p:[
-["Kartana","kartana"],["Guzzlord","guzzlord"],["Necrozma","necrozma"],["Magearna","magearna"],["Magearna Original","magearna-original"],["Marshadow","marshadow"],
-["Poipole","poipole"],["Naganadel","naganadel"],["Stakataka","stakataka"],["Blacephalon","blacephalon"],["Zeraora","zeraora"],["Meltan","meltan"],
-["Melmetal (Gigantamax)","melmetal"],["Grookey","grookey"],["Thwackey","thwackey"],["Rillaboom (Gigantamax)","rillaboom"],["Scorbunny","scorbunny"],["Raboot","raboot"],
-["Cinderace (Gigantamax)","cinderace"],["Sobble","sobble"],["Drizzile","drizzile"],["Inteleon (Gigantamax)","inteleon"],["Skwovet","skwovet"],["Greedent","greedent"],
-["Rookidee","rookidee"],["Corvisquire","corvisquire"],["Corviknight (Gigantamax)","corviknight"],["Blipbug","blipbug"],["Dottler","dottler"],["Orbeetle (Gigantamax)","orbeetle"]
-]},
-{n:38,p:[
-["Nickit","nickit"],["Thievul","thievul"],["Gossifleur","gossifleur"],["Eldegoss","eldegoss"],["Wooloo","wooloo"],["Dubwool","dubwool"],
-["Chewtle","chewtle"],["Drednaw (Gigantamax)","drednaw"],["Yamper","yamper"],["Boltund","boltund"],["Rolycoly","rolycoly"],["Carkol","carkol"],
-["Coalossal (Gigantamax)","coalossal"],["Applin","applin"],["Flapple (Gigantamax)","flapple"],["Appletun (Gigantamax)","appletun"],["Silicobra","silicobra"],["Sandaconda (Gigantamax)","sandaconda"],
-["Cramorant","cramorant"],["Arrokuda","arrokuda"],["Barraskewda","barraskewda"],["Toxel","toxel"],["Toxtricity (Gigantamax)","toxtricity-amped"],["Toxtricity Low Key (Gigantamax)","toxtricity-low-key"],
-["Sizzlipede","sizzlipede"],["Centiskorch (Gigantamax)","centiskorch"],["Clobbopus","clobbopus"],["Grapploct","grapploct"],["Sinistea","sinistea"],["Sinistea Authentic","sinistea-antique"]
-]},
-{n:39,p:[
-["Polteageist","polteageist"],["Polteageist Authentic","polteageist-antique"],["Hatenna","hatenna"],["Hattrem","hattrem"],["Hatterene (Gigantamax)","hatterene"],["Impidimp","impidimp"],
-["Morgrem","morgrem"],["Grimmsnarl (Gigantamax)","grimmsnarl"],["Obstagoon","obstagoon"],["Perrserker","perrserker"],["Cursola","cursola"],["Sirfetch'd","sirfetchd"],
-["Mr. Rime","mr-rime"],["Runerigus","runerigus"],["Milcery","milcery"],["Alcremie Vanilla Strawberry (Gigantamax)","alcremie-vanilla-cream-strawberry"],["Alcremie Vanilla Berry","alcremie-vanilla-cream-berry"],["Alcremie Vanilla Love","alcremie-vanilla-cream-love"],
-["Alcremie Vanilla Star","alcremie-vanilla-cream-star"],["Alcremie Vanilla Clover","alcremie-vanilla-cream-clover"],["Alcremie Vanilla Flower","alcremie-vanilla-cream-flower"],["Alcremie Vanilla Ribbon","alcremie-vanilla-cream-ribbon"],["Alcremie Ruby Strawberry","alcremie-ruby-cream-strawberry"],["Alcremie Ruby Berry","alcremie-ruby-cream-berry"],
-["Alcremie Ruby Love","alcremie-ruby-cream-love"],["Alcremie Ruby Star","alcremie-ruby-cream-star"],["Alcremie Ruby Clover","alcremie-ruby-cream-clover"],["Alcremie Ruby Flower","alcremie-ruby-cream-flower"],["Alcremie Ruby Ribbon","alcremie-ruby-cream-ribbon"],["Alcremie Ruby Swirl Strawberry","alcremie-ruby-swirl-strawberry"]
-]},
-{n:40,p:[
-["Alcremie Ruby Swirl Berry","alcremie-ruby-swirl-berry"],["Alcremie Matcha Strawberry","alcremie-matcha-cream-strawberry"],["Alcremie Matcha Berry","alcremie-matcha-cream-berry"],["Alcremie Matcha Love","alcremie-matcha-cream-love"],["Alcremie Matcha Star","alcremie-matcha-cream-star"],["Alcremie Matcha Clover","alcremie-matcha-cream-clover"],
-["Alcremie Matcha Flower","alcremie-matcha-cream-flower"],["Alcremie Matcha Ribbon","alcremie-matcha-cream-ribbon"],["Alcremie Mint Strawberry","alcremie-mint-cream-strawberry"],["Alcremie Mint Berry","alcremie-mint-cream-berry"],["Alcremie Mint Love","alcremie-mint-cream-love"],["Alcremie Mint Star","alcremie-mint-cream-star"],
-["Alcremie Mint Clover","alcremie-mint-cream-clover"],["Alcremie Mint Flower","alcremie-mint-cream-flower"],["Alcremie Mint Ribbon","alcremie-mint-cream-ribbon"],["Alcremie Lemon Strawberry","alcremie-lemon-cream-strawberry"],["Alcremie Lemon Berry","alcremie-lemon-cream-berry"],["Alcremie Lemon Love","alcremie-lemon-cream-love"],
-["Alcremie Lemon Star","alcremie-lemon-cream-star"],["Alcremie Lemon Clover","alcremie-lemon-cream-clover"],["Alcremie Lemon Flower","alcremie-lemon-cream-flower"],["Alcremie Lemon Ribbon","alcremie-lemon-cream-ribbon"],["Alcremie Salted Strawberry","alcremie-salted-cream-strawberry"],["Alcremie Salted Berry","alcremie-salted-cream-berry"],
-["Alcremie Salted Love","alcremie-salted-cream-love"],["Alcremie Salted Star","alcremie-salted-cream-star"],["Alcremie Salted Clover","alcremie-salted-cream-clover"],["Alcremie Salted Flower","alcremie-salted-cream-flower"],["Alcremie Salted Ribbon","alcremie-salted-cream-ribbon"],["Alcremie Ruby Swirl Love","alcremie-ruby-swirl-love"]
-]},
-{n:41,p:[
-["Alcremie Ruby Swirl Star","alcremie-ruby-swirl-star"],["Alcremie Ruby Swirl Clover","alcremie-ruby-swirl-clover"],["Alcremie Ruby Swirl Flower","alcremie-ruby-swirl-flower"],["Alcremie Ruby Swirl Ribbon","alcremie-ruby-swirl-ribbon"],["Alcremie Caramel Strawberry","alcremie-caramel-swirl-strawberry"],["Alcremie Caramel Berry","alcremie-caramel-swirl-berry"],
-["Alcremie Caramel Love","alcremie-caramel-swirl-love"],["Alcremie Caramel Star","alcremie-caramel-swirl-star"],["Alcremie Caramel Clover","alcremie-caramel-swirl-clover"],["Alcremie Caramel Flower","alcremie-caramel-swirl-flower"],["Alcremie Caramel Ribbon","alcremie-caramel-swirl-ribbon"],["Alcremie Rainbow Strawberry","alcremie-rainbow-swirl-strawberry"],
-["Alcremie Rainbow Berry","alcremie-rainbow-swirl-berry"],["Alcremie Rainbow Love","alcremie-rainbow-swirl-love"],["Alcremie Rainbow Star","alcremie-rainbow-swirl-star"],["Alcremie Rainbow Clover","alcremie-rainbow-swirl-clover"],["Alcremie Rainbow Flower","alcremie-rainbow-swirl-flower"],["Alcremie Rainbow Ribbon","alcremie-rainbow-swirl-ribbon"],
-["Falinks","falinks"],["Pincurchin","pincurchin"],["Snom","snom"],["Frosmoth","frosmoth"],["Stonjourner","stonjourner"],["Eiscue","eiscue-ice"],
-["Indeedee (M)","indeedee-m"],["Indeedee (F)","indeedee-f"],["Morpeko","morpeko-full-belly"],["Cufant","cufant"],["Copperajah (Gigantamax)","copperajah"],["Dracozolt","dracozolt"]
-]},
-{n:42,p:[
-["Arctozolt","arctozolt"],["Dracovish","dracovish"],["Arctovish","arctovish"],["Duraludon (Gigantamax)","duraludon"],["Dreepy","dreepy"],["Drakloak","drakloak"],
-["Dragapult","dragapult"],["Zacian","zacian"],["Zamazenta","zamazenta"],["Eternatus","eternatus"],["Kubfu","kubfu"],["Urshifu (Gigantamax)","urshifu-single-strike"],
-["Urshifu Rapid Strike (Gigantamax)","urshifu-rapid-strike"],["Zarude","zarude"],["Zarude Dada","zarude-dada"],["Regieleki","regieleki"],["Regidrago","regidrago"],["Glastrier","glastrier"],
-["Spectrier","spectrier"],["Calyrex","calyrex"],["Wyrdeer","wyrdeer"],["Kleavor","kleavor"],["Ursaluna","ursaluna"],["Ursaluna Blood Moon","ursaluna-bloodmoon"],
-["Basculegion (M)","basculegion"],["Basculegion (F)","basculegion-f"],["Sneasler","sneasler"],["Overqwil","overqwil"],["Enamorus","enamorus-incarnate"],["Enamorus Therian","enamorus-therian"]
-]},
-{n:43,p:[
-["Sprigatito","sprigatito"],["Floragato","floragato"],["Meowscarada","meowscarada"],["Fuecoco","fuecoco"],["Crocalor","crocalor"],["Skeledirge","skeledirge"],
-["Quaxly","quaxly"],["Quaxwell","quaxwell"],["Quaquaval","quaquaval"],["Lechonk","lechonk"],["Oinkologne (M)","oinkologne"],["Oinkologne (F)","oinkologne-f"],
-["Tarountula","tarountula"],["Spidops","spidops"],["Nymble","nymble"],["Lokix","lokix"],["Pawmi","pawmi"],["Pawmo","pawmo"],
-["Pawmot","pawmot"],["Tandemaus","tandemaus"],["Maushold","maushold-family3"],["Maushold (Family of Four)","maushold-family4"],["Fidough","fidough"],["Dachsbun","dachsbun"],
-["Smoliv","smoliv"],["Dolliv","dolliv"],["Arboliva","arboliva"],["Squawkabilly","squawkabilly-green"],["Squawkabilly Blue","squawkabilly-blue"],["Squawkabilly Yellow","squawkabilly-yellow"]
-]},
-{n:44,p:[
-["Squawkabilly White","squawkabilly-white"],["Nacli","nacli"],["Naclstack","naclstack"],["Garganacl","garganacl"],["Charcadet","charcadet"],["Armarouge","armarouge"],
-["Ceruledge","ceruledge"],["Tadbulb","tadbulb"],["Bellibolt","bellibolt"],["Wattrel","wattrel"],["Kilowattrel","kilowattrel"],["Maschiff","maschiff"],
-["Mabosstiff","mabosstiff"],["Shroodle","shroodle"],["Grafaiai","grafaiai"],["Bramblin","bramblin"],["Brambleghast","brambleghast"],["Toedscool","toedscool"],
-["Toedscruel","toedscruel"],["Klawf","klawf"],["Capsakid","capsakid"],["Scovillain","scovillain"],["Rellor","rellor"],["Rabsca","rabsca"],
-["Flittle","flittle"],["Espathra","espathra"],["Tinkatink","tinkatink"],["Tinkatuff","tinkatuff"],["Tinkaton","tinkaton"],["Wiglett","wiglett"]
-]},
-{n:45,p:[
-["Wugtrio","wugtrio"],["Bombirdier","bombirdier"],["Finizen","finizen"],["Palafin","palafin"],["Varoom","varoom"],["Revavroom","revavroom"],
-["Cyclizar","cyclizar"],["Orthworm","orthworm"],["Glimmet","glimmet"],["Glimmora","glimmora"],["Greavard","greavard"],["Houndstone","houndstone"],
-["Flamigo","flamigo"],["Cetoddle","cetoddle"],["Cetitan","cetitan"],["Veluza","veluza"],["Dondozo","dondozo"],["Tatsugiri","tatsugiri"],
-["Tatsugiri Droopy","tatsugiri-droopy"],["Tatsugiri Stretchy","tatsugiri-stretchy"],["Annihilape","annihilape"],["Clodsire","clodsire"],["Farigiraf","farigiraf"],["Dudunsparce","dudunsparce"],
-["Dudunsparce 3-Seg","dudunsparce-three-segment"],["Kingambit","kingambit"],["Great Tusk","great-tusk"],["Scream Tail","scream-tail"],["Brute Bonnet","brute-bonnet"],["Flutter Mane","flutter-mane"]
-]},
-{n:46,p:[
-["Slither Wing","slither-wing"],["Sandy Shocks","sandy-shocks"],["Iron Treads","iron-treads"],["Iron Bundle","iron-bundle"],["Iron Hands","iron-hands"],["Iron Jugulis","iron-jugulis"],
-["Iron Moth","iron-moth"],["Iron Thorns","iron-thorns"],["Frigibax","frigibax"],["Arctibax","arctibax"],["Baxcalibur","baxcalibur"],["Gimmighoul","gimmighoul-chest"],
-["Gimmighoul Roaming","gimmighoul-roaming"],["Gholdengo","gholdengo"],["Wo-Chien","wo-chien"],["Chien-Pao","chien-pao"],["Ting-Lu","ting-lu"],["Chi-Yu","chi-yu"],
-["Roaring Moon","roaring-moon"],["Iron Valiant","iron-valiant"],["Koraidon","koraidon"],["Miraidon","miraidon"],["Walking Wake","walking-wake"],["Iron Leaves","iron-leaves"],
-["Dipplin","dipplin"],["Poltchageist","poltchageist"],["Poltchageist Artisan","poltchageist-artisan"],["Sinistcha","sinistcha"],["Sinistcha Masterpiece","sinistcha"],["Okidogi","okidogi"]
-]},
-{n:47,p:[
-["Munkidori","munkidori"],["Fezandipiti","fezandipiti"],["Ogerpon","ogerpon-teal"],["Archaludon","archaludon"],["Hydrapple","hydrapple"],["Gouging Fire","gouging-fire"],
-["Raging Bolt","raging-bolt"],["Iron Boulder","iron-boulder"],["Iron Crown","iron-crown"],["Terapagos","terapagos"],["Pecharunt","pecharunt"]
-]}
+{n:1,sk:"species",p:[["Bulbasaur","bulbasaur"],["Ivysaur","ivysaur"],["Venusaur (M) (Gigantamax)","venusaur"],["Charmander","charmander"],["Charmeleon","charmeleon"],["Charizard (Gigantamax)","charizard"],["Squirtle","squirtle"],["Wartortle","wartortle"],["Blastoise (Gigantamax)","blastoise"],["Caterpie","caterpie"],["Metapod","metapod"],["Butterfree (M) (Gigantamax)","butterfree"],["Weedle","weedle"],["Kakuna","kakuna"],["Beedrill","beedrill"],["Pidgey","pidgey"],["Pidgeotto","pidgeotto"],["Pidgeot","pidgeot"],["Rattata (M)","rattata"],["Raticate (M)","raticate"],["Spearow","spearow"],["Fearow","fearow"],["Ekans","ekans"],["Arbok","arbok"],["Pikachu (M) (Gigantamax)","pikachu"],["Raichu (M)","raichu"],["Sandshrew","sandshrew"],["Sandslash","sandslash"],["Nidoran♀","nidoran-f"],["Nidorina","nidorina"]]},
+{n:2,sk:"species",p:[["Nidoqueen","nidoqueen"],["Nidoran♂","nidoran-m"],["Nidorino","nidorino"],["Nidoking","nidoking"],["Clefairy","clefairy"],["Clefable","clefable"],["Vulpix","vulpix"],["Ninetales","ninetales"],["Jigglypuff","jigglypuff"],["Wigglytuff","wigglytuff"],["Zubat (M)","zubat"],["Golbat (M)","golbat"],["Oddish","oddish"],["Gloom (M)","gloom"],["Vileplume (M)","vileplume"],["Paras","paras"],["Parasect","parasect"],["Venonat","venonat"],["Venomoth","venomoth"],["Diglett","diglett"],["Dugtrio","dugtrio"],["Meowth (Gigantamax)","meowth"],["Persian","persian"],["Psyduck","psyduck"],["Golduck","golduck"],["Mankey","mankey"],["Primeape","primeape"],["Growlithe","growlithe"],["Arcanine","arcanine"],["Poliwag","poliwag"]]},
+{n:3,sk:"species",p:[["Poliwhirl","poliwhirl"],["Poliwrath","poliwrath"],["Abra","abra"],["Kadabra (M)","kadabra"],["Alakazam (M)","alakazam"],["Machop","machop"],["Machoke","machoke"],["Machamp (Gigantamax)","machamp"],["Bellsprout","bellsprout"],["Weepinbell","weepinbell"],["Victreebel","victreebel"],["Tentacool","tentacool"],["Tentacruel","tentacruel"],["Geodude","geodude"],["Graveler","graveler"],["Golem","golem"],["Ponyta","ponyta"],["Rapidash","rapidash"],["Slowpoke","slowpoke"],["Slowbro","slowbro"],["Magnemite","magnemite"],["Magneton","magneton"],["Farfetch'd","farfetchd"],["Doduo (M)","doduo"],["Dodrio (M)","dodrio"],["Seel","seel"],["Dewgong","dewgong"],["Grimer","grimer"],["Muk","muk"],["Shellder","shellder"]]},
+{n:4,sk:"species",p:[["Cloyster","cloyster"],["Gastly","gastly"],["Haunter","haunter"],["Gengar (Gigantamax)","gengar"],["Onix","onix"],["Drowzee","drowzee"],["Hypno (M)","hypno"],["Krabby","krabby"],["Kingler (Gigantamax)","kingler"],["Voltorb","voltorb"],["Electrode","electrode"],["Exeggcute","exeggcute"],["Exeggutor","exeggutor"],["Cubone","cubone"],["Marowak","marowak"],["Hitmonlee","hitmonlee"],["Hitmonchan","hitmonchan"],["Lickitung","lickitung"],["Koffing","koffing"],["Weezing","weezing"],["Rhyhorn (M)","rhyhorn"],["Rhydon (M)","rhydon"],["Chansey","chansey"],["Tangela","tangela"],["Kangaskhan","kangaskhan"],["Horsea","horsea"],["Seadra","seadra"],["Goldeen (M)","goldeen"],["Seaking (M)","seaking"],["Staryu","staryu"]]},
+{n:5,sk:"species",p:[["Starmie","starmie"],["Mr. Mime","mr-mime"],["Scyther (M)","scyther"],["Jynx","jynx"],["Electabuzz","electabuzz"],["Magmar","magmar"],["Pinsir","pinsir"],["Tauros","tauros"],["Tauros Blaze","tauros-paldean-blaze"],["Tauros Aqua","tauros-paldean-aqua"],["Magikarp (M)","magikarp"],["Gyarados (M)","gyarados"],["Lapras (Gigantamax)","lapras"],["Ditto","ditto"],["Eevee (M) (Gigantamax)","eevee"],["Vaporeon","vaporeon"],["Jolteon","jolteon"],["Flareon","flareon"],["Porygon","porygon"],["Omanyte","omanyte"],["Omastar","omastar"],["Kabuto","kabuto"],["Kabutops","kabutops"],["Aerodactyl","aerodactyl"],["Snorlax (Gigantamax)","snorlax"],["Articuno","articuno"],["Zapdos","zapdos"],["Moltres","moltres"],["Dratini","dratini"],["Dragonair","dragonair"]]},
+{n:6,sk:"species",p:[["Dragonite","dragonite"],["Mewtwo","mewtwo"],["Mew","mew"],["Chikorita","chikorita"],["Bayleef","bayleef"],["Meganium (M)","meganium"],["Cyndaquil","cyndaquil"],["Quilava","quilava"],["Typhlosion","typhlosion"],["Totodile","totodile"],["Croconaw","croconaw"],["Feraligatr","feraligatr"],["Sentret","sentret"],["Furret","furret"],["Hoothoot","hoothoot"],["Noctowl","noctowl"],["Ledyba (M)","ledyba"],["Ledian (M)","ledian"],["Spinarak","spinarak"],["Ariados","ariados"],["Crobat","crobat"],["Chinchou","chinchou"],["Lanturn","lanturn"],["Pichu","pichu"],["Cleffa","cleffa"],["Igglybuff","igglybuff"],["Togepi","togepi"],["Togetic","togetic"],["Natu","natu"],["Xatu (M)","xatu"]]},
+{n:7,sk:"species",p:[["Mareep","mareep"],["Flaaffy","flaaffy"],["Ampharos","ampharos"],["Bellossom","bellossom"],["Marill","marill"],["Azumarill","azumarill"],["Sudowoodo (M)","sudowoodo"],["Politoed (M)","politoed"],["Hoppip","hoppip"],["Skiploom","skiploom"],["Jumpluff","jumpluff"],["Aipom (M)","aipom"],["Sunkern","sunkern"],["Sunflora","sunflora"],["Yanma","yanma"],["Wooper (M)","wooper"],["Quagsire (M)","quagsire"],["Espeon","espeon"],["Umbreon","umbreon"],["Murkrow (M)","murkrow"],["Slowking","slowking"],["Misdreavus","misdreavus"],["Unown A","unown"],["Unown B","unown-b"],["Unown C","unown-c"],["Unown D","unown-d"],["Unown E","unown-e"],["Unown F","unown-f"],["Unown G","unown-g"],["Unown H","unown-h"]]},
+{n:8,sk:"species",p:[["Unown I","unown-i"],["Unown J","unown-j"],["Unown K","unown-k"],["Unown L","unown-l"],["Unown M","unown-m"],["Unown N","unown-n"],["Unown O","unown-o"],["Unown P","unown-p"],["Unown Q","unown-q"],["Unown R","unown-r"],["Unown S","unown-s"],["Unown T","unown-t"],["Unown U","unown-u"],["Unown V","unown-v"],["Unown W","unown-w"],["Unown X","unown-x"],["Unown Y","unown-y"],["Unown Z","unown-z"],["Unown !","unown-exclamation"],["Unown ?","unown-question"],["Wobbuffet (M)","wobbuffet"],["Girafarig (M)","girafarig"],["Pineco","pineco"],["Forretress","forretress"],["Dunsparce","dunsparce"],["Gligar (M)","gligar"],["Steelix (M)","steelix"],["Snubbull","snubbull"],["Granbull","granbull"],["Qwilfish","qwilfish"]]},
+{n:9,sk:"species",p:[["Scizor (M)","scizor"],["Shuckle","shuckle"],["Heracross (M)","heracross"],["Sneasel (M)","sneasel"],["Teddiursa","teddiursa"],["Ursaring (M)","ursaring"],["Slugma","slugma"],["Magcargo","magcargo"],["Swinub","swinub"],["Piloswine (M)","piloswine"],["Corsola","corsola"],["Remoraid","remoraid"],["Octillery (M)","octillery"],["Delibird","delibird"],["Mantine","mantine"],["Skarmory","skarmory"],["Houndour","houndour"],["Houndoom (M)","houndoom"],["Kingdra","kingdra"],["Phanpy","phanpy"],["Donphan (M)","donphan"],["Porygon2","porygon2"],["Stantler","stantler"],["Smeargle","smeargle"],["Tyrogue","tyrogue"],["Hitmontop","hitmontop"],["Smoochum","smoochum"],["Elekid","elekid"],["Magby","magby"],["Miltank","miltank"]]},
+{n:10,sk:"species",p:[["Blissey","blissey"],["Raikou","raikou"],["Entei","entei"],["Suicune","suicune"],["Larvitar","larvitar"],["Pupitar","pupitar"],["Tyranitar","tyranitar"],["Lugia","lugia"],["Ho-Oh","ho-oh"],["Celebi","celebi"],["Treecko","treecko"],["Grovyle","grovyle"],["Sceptile","sceptile"],["Torchic (M)","torchic"],["Combusken (M)","combusken"],["Blaziken (M)","blaziken"],["Mudkip","mudkip"],["Marshtomp","marshtomp"],["Swampert","swampert"],["Poochyena","poochyena"],["Mightyena","mightyena"],["Zigzagoon","zigzagoon"],["Linoone","linoone"],["Wurmple","wurmple"],["Silcoon","silcoon"],["Beautifly (M)","beautifly"],["Cascoon","cascoon"],["Dustox (M)","dustox"],["Lotad","lotad"],["Lombre","lombre"]]},
+{n:11,sk:"species",p:[["Ludicolo (M)","ludicolo"],["Seedot","seedot"],["Nuzleaf (M)","nuzleaf"],["Shiftry (M)","shiftry"],["Taillow","taillow"],["Swellow","swellow"],["Wingull","wingull"],["Pelipper","pelipper"],["Ralts","ralts"],["Kirlia","kirlia"],["Gardevoir","gardevoir"],["Surskit","surskit"],["Masquerain","masquerain"],["Shroomish","shroomish"],["Breloom","breloom"],["Slakoth","slakoth"],["Vigoroth","vigoroth"],["Slaking","slaking"],["Nincada","nincada"],["Ninjask","ninjask"],["Shedinja","shedinja"],["Whismur","whismur"],["Loudred","loudred"],["Exploud","exploud"],["Makuhita","makuhita"],["Hariyama","hariyama"],["Azurill","azurill"],["Nosepass","nosepass"],["Skitty","skitty"],["Delcatty","delcatty"]]},
+{n:12,sk:"species",p:[["Sableye","sableye"],["Mawile","mawile"],["Aron","aron"],["Lairon","lairon"],["Aggron","aggron"],["Meditite (M)","meditite"],["Medicham (M)","medicham"],["Electrike","electrike"],["Manectric","manectric"],["Plusle","plusle"],["Minun","minun"],["Volbeat","volbeat"],["Illumise","illumise"],["Roselia (M)","roselia"],["Gulpin (M)","gulpin"],["Swalot (M)","swalot"],["Carvanha","carvanha"],["Sharpedo","sharpedo"],["Wailmer","wailmer"],["Wailord","wailord"],["Numel (M)","numel"],["Camerupt (M)","camerupt"],["Torkoal","torkoal"],["Spoink","spoink"],["Grumpig","grumpig"],["Spinda","spinda"],["Trapinch","trapinch"],["Vibrava","vibrava"],["Flygon","flygon"],["Cacnea","cacnea"]]},
+{n:13,sk:"species",p:[["Cacturne (M)","cacturne"],["Swablu","swablu"],["Altaria","altaria"],["Zangoose","zangoose"],["Seviper","seviper"],["Lunatone","lunatone"],["Solrock","solrock"],["Barboach","barboach"],["Whiscash","whiscash"],["Corphish","corphish"],["Crawdaunt","crawdaunt"],["Baltoy","baltoy"],["Claydol","claydol"],["Lileep","lileep"],["Cradily","cradily"],["Anorith","anorith"],["Armaldo","armaldo"],["Feebas","feebas"],["Milotic (M)","milotic"],["Castform","castform"],["Kecleon","kecleon"],["Shuppet","shuppet"],["Banette","banette"],["Duskull","duskull"],["Dusclops","dusclops"],["Tropius","tropius"],["Chimecho","chimecho"],["Absol","absol"],["Wynaut","wynaut"],["Snorunt","snorunt"]]},
+{n:14,sk:"species",p:[["Glalie","glalie"],["Spheal","spheal"],["Sealeo","sealeo"],["Walrein","walrein"],["Clamperl","clamperl"],["Huntail","huntail"],["Gorebyss","gorebyss"],["Relicanth (M)","relicanth"],["Luvdisc","luvdisc"],["Bagon","bagon"],["Shelgon","shelgon"],["Salamence","salamence"],["Beldum","beldum"],["Metang","metang"],["Metagross","metagross"],["Regirock","regirock"],["Regice","regice"],["Registeel","registeel"],["Latias","latias"],["Latios","latios"],["Kyogre","kyogre"],["Groudon","groudon"],["Rayquaza","rayquaza"],["Jirachi","jirachi"],["Deoxys","deoxys-normal"],["Deoxys Attack","deoxys-attack"],["Deoxys Defense","deoxys-defense"],["Deoxys Speed","deoxys-speed"],["Turtwig","turtwig"],["Grotle","grotle"]]},
+{n:15,sk:"species",p:[["Torterra","torterra"],["Chimchar","chimchar"],["Monferno","monferno"],["Infernape","infernape"],["Piplup","piplup"],["Prinplup","prinplup"],["Empoleon","empoleon"],["Starly (M)","starly"],["Staravia (M)","staravia"],["Staraptor (M)","staraptor"],["Bidoof (M)","bidoof"],["Bibarel (M)","bibarel"],["Kricketot (M)","kricketot"],["Kricketune (M)","kricketune"],["Shinx (M)","shinx"],["Luxio (M)","luxio"],["Luxray (M)","luxray"],["Budew","budew"],["Roserade (M)","roserade"],["Cranidos","cranidos"],["Rampardos","rampardos"],["Shieldon","shieldon"],["Bastiodon","bastiodon"],["Burmy","burmy"],["Wormadam","wormadam"],["Mothim","mothim"],["Combee (M)","combee"],["Vespiquen","vespiquen"],["Pachirisu (M)","pachirisu"],["Buizel (M)","buizel"]]},
+{n:16,sk:"species",p:[["Floatzel (M)","floatzel"],["Cherubi","cherubi"],["Cherrim","cherrim"],["Shellos","shellos"],["Shellos East","shellos-east"],["Gastrodon","gastrodon"],["Gastrodon East","gastrodon-east"],["Ambipom (M)","ambipom"],["Drifloon","drifloon"],["Drifblim","drifblim"],["Buneary","buneary"],["Lopunny","lopunny"],["Mismagius","mismagius"],["Honchkrow","honchkrow"],["Glameow","glameow"],["Purugly","purugly"],["Chingling","chingling"],["Stunky","stunky"],["Skuntank","skuntank"],["Bronzor","bronzor"],["Bronzong","bronzong"],["Bonsly","bonsly"],["Mime Jr.","mime-jr"],["Happiny","happiny"],["Chatot","chatot"],["Spiritomb","spiritomb"],["Gible (M)","gible"],["Gabite (M)","gabite"],["Garchomp (M)","garchomp"],["Munchlax","munchlax"]]},
+{n:17,sk:"species",p:[["Riolu","riolu"],["Lucario","lucario"],["Hippopotas (M)","hippopotas"],["Hippowdon (M)","hippowdon"],["Skorupi","skorupi"],["Drapion","drapion"],["Croagunk (M)","croagunk"],["Toxicroak (M)","toxicroak"],["Carnivine","carnivine"],["Finneon (M)","finneon"],["Lumineon (M)","lumineon"],["Mantyke","mantyke"],["Snover (M)","snover"],["Abomasnow (M)","abomasnow"],["Weavile (M)","weavile"],["Magnezone","magnezone"],["Lickilicky","lickilicky"],["Rhyperior (M)","rhyperior"],["Tangrowth (M)","tangrowth"],["Electivire","electivire"],["Magmortar","magmortar"],["Togekiss","togekiss"],["Yanmega","yanmega"],["Leafeon","leafeon"],["Glaceon","glaceon"],["Gliscor","gliscor"],["Mamoswine (M)","mamoswine"],["Porygon-Z","porygon-z"],["Gallade","gallade"],["Probopass","probopass"]]},
+{n:18,sk:"species",p:[["Dusknoir","dusknoir"],["Froslass","froslass"],["Rotom","rotom"],["Uxie","uxie"],["Mesprit","mesprit"],["Azelf","azelf"],["Dialga","dialga"],["Palkia","palkia"],["Heatran","heatran"],["Regigigas","regigigas"],["Cresselia","cresselia"],["Phione","phione"],["Manaphy","manaphy"],["Darkrai","darkrai"],["Shaymin","shaymin"],["Arceus","arceus"],["Victini","victini"],["Snivy","snivy"],["Servine","servine"],["Serperior","serperior"],["Tepig","tepig"],["Pignite","pignite"],["Emboar","emboar"],["Oshawott","oshawott"],["Dewott","dewott"],["Samurott","samurott"],["Patrat","patrat"],["Watchog","watchog"],["Lillipup","lillipup"],["Herdier","herdier"]]},
+{n:19,sk:"species",p:[["Stoutland","stoutland"],["Purrloin","purrloin"],["Liepard","liepard"],["Pansage","pansage"],["Simisage","simisage"],["Pansear","pansear"],["Simisear","simisear"],["Panpour","panpour"],["Simipour","simipour"],["Munna","munna"],["Musharna","musharna"],["Pidove","pidove"],["Tranquill","tranquill"],["Unfezant (M)","unfezant"],["Blitzle","blitzle"],["Zebstrika","zebstrika"],["Roggenrola","roggenrola"],["Boldore","boldore"],["Gigalith","gigalith"],["Woobat","woobat"],["Swoobat","swoobat"],["Drilbur","drilbur"],["Excadrill","excadrill"],["Audino","audino"],["Timburr","timburr"],["Gurdurr","gurdurr"],["Conkeldurr","conkeldurr"],["Tympole","tympole"],["Palpitoad","palpitoad"],["Seismitoad","seismitoad"]]},
+{n:20,sk:"species",p:[["Throh","throh"],["Sawk","sawk"],["Sewaddle","sewaddle"],["Swadloon","swadloon"],["Leavanny","leavanny"],["Venipede","venipede"],["Whirlipede","whirlipede"],["Scolipede","scolipede"],["Cottonee","cottonee"],["Whimsicott","whimsicott"],["Petilil","petilil"],["Lilligant","lilligant"],["Basculin Red-Striped","basculin"],["Sandile","sandile"],["Krokorok","krokorok"],["Krookodile","krookodile"],["Darumaka","darumaka"],["Darmanitan","darmanitan"],["Maractus","maractus"],["Dwebble","dwebble"],["Crustle","crustle"],["Scraggy","scraggy"],["Scrafty","scrafty"],["Sigilyph","sigilyph"],["Yamask","yamask"],["Cofagrigus","cofagrigus"],["Tirtouga","tirtouga"],["Carracosta","carracosta"],["Archen","archen"],["Archeops","archeops"]]},
+{n:21,sk:"species",p:[["Trubbish","trubbish"],["Garbodor (Gigantamax)","garbodor"],["Zorua","zorua"],["Zoroark","zoroark"],["Minccino","minccino"],["Cinccino","cinccino"],["Gothita","gothita"],["Gothorita","gothorita"],["Gothitelle","gothitelle"],["Solosis","solosis"],["Duosion","duosion"],["Reuniclus","reuniclus"],["Ducklett","ducklett"],["Swanna","swanna"],["Vanillite","vanillite"],["Vanillish","vanillish"],["Vanilluxe","vanilluxe"],["Deerling","deerling"],["Deerling Summer","deerling-summer"],["Deerling Autumn","deerling-autumn"],["Deerling Winter","deerling-winter"],["Sawsbuck","sawsbuck"],["Sawsbuck Summer","sawsbuck-summer"],["Sawsbuck Autumn","sawsbuck-autumn"],["Sawsbuck Winter","sawsbuck-winter"],["Emolga","emolga"],["Karrablast","karrablast"],["Escavalier","escavalier"],["Foongus","foongus"],["Amoonguss","amoonguss"]]},
+{n:22,sk:"species",p:[["Frillish (M)","frillish"],["Jellicent (M)","jellicent"],["Alomomola","alomomola"],["Joltik","joltik"],["Galvantula","galvantula"],["Ferroseed","ferroseed"],["Ferrothorn","ferrothorn"],["Klink","klink"],["Klang","klang"],["Klinklang","klinklang"],["Tynamo","tynamo"],["Eelektrik","eelektrik"],["Eelektross","eelektross"],["Elgyem","elgyem"],["Beheeyem","beheeyem"],["Litwick","litwick"],["Lampent","lampent"],["Chandelure","chandelure"],["Axew","axew"],["Fraxure","fraxure"],["Haxorus","haxorus"],["Cubchoo","cubchoo"],["Beartic","beartic"],["Cryogonal","cryogonal"],["Shelmet","shelmet"],["Accelgor","accelgor"],["Stunfisk","stunfisk"],["Mienfoo","mienfoo"],["Mienshao","mienshao"],["Druddigon","druddigon"]]},
+{n:23,sk:"species",p:[["Golett","golett"],["Golurk","golurk"],["Pawniard","pawniard"],["Bisharp","bisharp"],["Bouffalant","bouffalant"],["Rufflet","rufflet"],["Braviary","braviary"],["Vullaby","vullaby"],["Mandibuzz","mandibuzz"],["Heatmor","heatmor"],["Durant","durant"],["Deino","deino"],["Zweilous","zweilous"],["Hydreigon","hydreigon"],["Larvesta","larvesta"],["Volcarona","volcarona"],["Cobalion","cobalion"],["Terrakion","terrakion"],["Virizion","virizion"],["Tornadus","tornadus-incarnate"],["Thundurus","thundurus-incarnate"],["Reshiram","reshiram"],["Zekrom","zekrom"],["Landorus","landorus-incarnate"],["Kyurem","kyurem"],["Keldeo","keldeo"],["Genesect","genesect"],["Chespin","chespin"],["Quilladin","quilladin"],["Chesnaught","chesnaught"]]},
+{n:24,sk:"species",p:[["Fennekin","fennekin"],["Braixen","braixen"],["Delphox","delphox"],["Froakie","froakie"],["Frogadier","frogadier"],["Greninja","greninja"],["Greninja Battle Bond","greninja"],["Bunnelby","bunnelby"],["Diggersby","diggersby"],["Fletchling","fletchling"],["Fletchinder","fletchinder"],["Talonflame","talonflame"],["Scatterbug","scatterbug"],["Spewpa","spewpa"],["Vivillon","vivillon"],["Vivillon Polar","vivillon-polar"],["Vivillon Tundra","vivillon-tundra"],["Vivillon Continental","vivillon-continental"],["Vivillon Garden","vivillon-garden"],["Vivillon Elegant","vivillon-elegant"],["Vivillon Icy Snow","vivillon-icy-snow"],["Vivillon Marine","vivillon-marine"],["Vivillon Archipelago","vivillon-archipelago"],["Vivillon High Plains","vivillon-high-plains"],["Vivillon Sandstorm","vivillon-sandstorm"],["Vivillon River","vivillon-river"],["Vivillon Monsoon","vivillon-monsoon"],["Vivillon Savanna","vivillon-savanna"],["Vivillon Sun","vivillon-sun"],["Vivillon Ocean","vivillon-ocean"]]},
+{n:25,sk:"species",p:[["Vivillon Jungle","vivillon-jungle"],["Vivillon Poké Ball","vivillon-poke-ball"],["Litleo","litleo"],["Pyroar (M)","pyroar"],["Flabébé","flabebe"],["Floette","floette"],["Floette Eternal","floette-eternal"],["Florges","florges"],["Skiddo","skiddo"],["Gogoat","gogoat"],["Pancham","pancham"],["Pangoro","pangoro"],["Furfrou","furfrou"],["Furfrou Deputante","furfrou-debutante"],["Furfrou Matron","furfrou-matron"],["Furfrou Dandy","furfrou-dandy"],["Furfrou La Reine","furfrou-la-reine"],["Furfrou Kabuki","furfrou-kabuki"],["Furfrou Pharaoh","furfrou-pharaoh"],["Espurr","espurr"],["Meowstic (M)","meowstic-m"],["Honedge","honedge"],["Doublade","doublade"],["Spritzee","spritzee"],["Aromatisse","aromatisse"],["Swirlix","swirlix"],["Slurpuff","slurpuff"],["Inkay","inkay"],["Malamar","malamar"],["Binacle","binacle"]]},
+{n:26,sk:"species",p:[["Barbaracle","barbaracle"],["Skrelp","skrelp"],["Dragalge","dragalge"],["Clauncher","clauncher"],["Clawitzer","clawitzer"],["Helioptile","helioptile"],["Heliolisk","heliolisk"],["Tyrunt","tyrunt"],["Tyrantrum","tyrantrum"],["Amaura","amaura"],["Aurorus","aurorus"],["Sylveon","sylveon"],["Hawlucha","hawlucha"],["Dedenne","dedenne"],["Carbink","carbink"],["Goomy","goomy"],["Sliggoo","sliggoo"],["Goodra","goodra"],["Klefki","klefki"],["Phantump","phantump"],["Trevenant","trevenant"],["Pumpkaboo","pumpkaboo"],["Pumpkaboo Small","pumpkaboo-small"],["Pumpkaboo Large","pumpkaboo-large"],["Pumpkaboo Super","pumpkaboo-super"],["Gourgeist","gourgeist"],["Gourgeist Small","gourgeist-small"],["Gourgeist Large","gourgeist-large"],["Gourgeist Super","gourgeist-super"],["Bergmite","bergmite"]]},
+{n:27,sk:"species",p:[["Avalugg","avalugg"],["Noibat","noibat"],["Noivern","noivern"],["Xerneas","xerneas"],["Yveltal","yveltal"],["Zygarde 10%","zygarde-10"],["Zygarde 50%","zygarde-50"],["Zygarde 10% Power Construct","zygarde-10"],["Zygarde 50% Power Construct","zygarde-50"],["Diancie","diancie"],["Hoopa","hoopa-confined"],["Hoopa Unbound","hoopa-unbound"],["Volcanion","volcanion"],["Rowlet","rowlet"],["Dartrix","dartrix"],["Decidueye","decidueye"],["Litten","litten"],["Torracat","torracat"],["Incineroar","incineroar"],["Popplio","popplio"],["Brionne","brionne"],["Primarina","primarina"],["Pikipek","pikipek"],["Trumbeak","trumbeak"],["Toucannon","toucannon"],["Yungoos","yungoos"],["Gumshoos","gumshoos"],["Grubbin","grubbin"],["Charjabug","charjabug"],["Vikavolt","vikavolt"]]},
+{n:28,sk:"species",p:[["Crabrawler","crabrawler"],["Crabominable","crabominable"],["Oricorio","oricorio-baile"],["Oricorio Pom-Pom","oricorio-pom-pom"],["Oricorio P'au","oricorio-pau"],["Oricorio Sensu","oricorio-sensu"],["Cutiefly","cutiefly"],["Ribombee","ribombee"],["Rockruff","rockruff"],["Rockruff Own Tempo","rockruff-own-tempo"],["Wishiwashi","wishiwashi"],["Mareanie","mareanie"],["Toxapex","toxapex"],["Mudbray","mudbray"],["Mudsdale","mudsdale"],["Dewpider","dewpider"],["Araquanid","araquanid"],["Fomantis","fomantis"],["Lurantis","lurantis"],["Morelull","morelull"],["Shiinotic","shiinotic"],["Salandit","salandit"],["Salazzle","salazzle"],["Stufful","stufful"],["Bewear","bewear"],["Bounsweet","bounsweet"],["Steenee","steenee"],["Tsareena","tsareena"],["Comfey","comfey"],["Oranguru","oranguru"]]},
+{n:29,sk:"species",p:[["Passimian","passimian"],["Wimpod","wimpod"],["Golisopod","golisopod"],["Sandygast","sandygast"],["Palossand","palossand"],["Pyukumuku","pyukumuku"],["Type: Null","type-null"],["Silvally","silvally"],["Minior","minior-meteor"],["Minior Green","minior-green-core"],["Minior Indigo","minior-indigo-core"],["Minior Violet","minior-violet-core"],["Komala","komala"],["Turtonator","turtonator"],["Togedemaru","togedemaru"],["Mimikyu","mimikyu"],["Bruxish","bruxish"],["Drampa","drampa"],["Dhelmise","dhelmise"],["Jangmo-o","jangmo-o"],["Hakamo-o","hakamo-o"],["Kommo-o","kommo-o"],["Tapu Koko","tapu-koko"],["Tapu Lele","tapu-lele"],["Tapu Bulu","tapu-bulu"],["Tapu Fini","tapu-fini"],["Cosmog","cosmog"],["Cosmoem","cosmoem"],["Solgaleo","solgaleo"],["Lunala","lunala"]]},
+{n:30,sk:"species",p:[["Nihilego","nihilego"],["Buzzwole","buzzwole"],["Pheromosa","pheromosa"],["Xurkitree","xurkitree"],["Celesteela","celesteela"],["Kartana","kartana"],["Guzzlord","guzzlord"],["Necrozma","necrozma"],["Magearna","magearna"],["Marshadow","marshadow"],["Poipole","poipole"],["Naganadel","naganadel"],["Stakataka","stakataka"],["Blacephalon","blacephalon"],["Zeraora","zeraora"],["Meltan","meltan"],["Melmetal (Gigantamax)","melmetal"],["Grookey","grookey"],["Thwackey","thwackey"],["Rillaboom (Gigantamax)","rillaboom"],["Scorbunny","scorbunny"],["Raboot","raboot"],["Cinderace (Gigantamax)","cinderace"],["Sobble","sobble"],["Drizzile","drizzile"],["Inteleon (Gigantamax)","inteleon"],["Skwovet","skwovet"],["Greedent","greedent"],["Rookidee","rookidee"],["Corvisquire","corvisquire"]]},
+{n:31,sk:"species",p:[["Corviknight (Gigantamax)","corviknight"],["Blipbug","blipbug"],["Dottler","dottler"],["Orbeetle (Gigantamax)","orbeetle"],["Nickit","nickit"],["Thievul","thievul"],["Gossifleur","gossifleur"],["Eldegoss","eldegoss"],["Wooloo","wooloo"],["Dubwool","dubwool"],["Chewtle","chewtle"],["Drednaw (Gigantamax)","drednaw"],["Yamper","yamper"],["Boltund","boltund"],["Rolycoly","rolycoly"],["Carkol","carkol"],["Coalossal (Gigantamax)","coalossal"],["Applin","applin"],["Flapple (Gigantamax)","flapple"],["Appletun (Gigantamax)","appletun"],["Silicobra","silicobra"],["Sandaconda (Gigantamax)","sandaconda"],["Cramorant","cramorant"],["Arrokuda","arrokuda"],["Barraskewda","barraskewda"],["Toxel","toxel"],["Toxtricity (Gigantamax)","toxtricity-amped"],["Toxtricity Low Key (Gigantamax)","toxtricity-low-key"],["Sizzlipede","sizzlipede"],["Centiskorch (Gigantamax)","centiskorch"]]},
+{n:32,sk:"species",p:[["Clobbopus","clobbopus"],["Grapploct","grapploct"],["Sinistea","sinistea"],["Sinistea Authentic","sinistea-antique"],["Polteageist","polteageist"],["Polteageist Authentic","polteageist-antique"],["Hatenna","hatenna"],["Hattrem","hattrem"],["Hatterene (Gigantamax)","hatterene"],["Impidimp","impidimp"],["Morgrem","morgrem"],["Grimmsnarl (Gigantamax)","grimmsnarl"],["Obstagoon","obstagoon"],["Perrserker","perrserker"],["Cursola","cursola"],["Sirfetch'd","sirfetchd"],["Mr. Rime","mr-rime"],["Runerigus","runerigus"],["Milcery","milcery"],["Alcremie Vanilla Strawberry (Gigantamax)","alcremie-vanilla-cream-strawberry"],["Alcremie Vanilla Berry","alcremie-vanilla-cream-berry"],["Alcremie Vanilla Love","alcremie-vanilla-cream-love"],["Alcremie Vanilla Clover","alcremie-vanilla-cream-clover"],["Alcremie Vanilla Flower","alcremie-vanilla-cream-flower"],["Alcremie Vanilla Ribbon","alcremie-vanilla-cream-ribbon"],["Alcremie Ruby Strawberry","alcremie-ruby-cream-strawberry"],["Alcremie Ruby Berry","alcremie-ruby-cream-berry"],["Alcremie Ruby Love","alcremie-ruby-cream-love"],["Alcremie Ruby Clover","alcremie-ruby-cream-clover"],["Alcremie Ruby Flower","alcremie-ruby-cream-flower"]]},
+{n:33,sk:"species",p:[["Alcremie Ruby Ribbon","alcremie-ruby-cream-ribbon"],["Alcremie Ruby Swirl Strawberry","alcremie-ruby-swirl-strawberry"],["Alcremie Ruby Swirl Berry","alcremie-ruby-swirl-berry"],["Alcremie Matcha Strawberry","alcremie-matcha-cream-strawberry"],["Alcremie Matcha Berry","alcremie-matcha-cream-berry"],["Alcremie Matcha Love","alcremie-matcha-cream-love"],["Alcremie Matcha Clover","alcremie-matcha-cream-clover"],["Alcremie Matcha Flower","alcremie-matcha-cream-flower"],["Alcremie Matcha Ribbon","alcremie-matcha-cream-ribbon"],["Alcremie Mint Strawberry","alcremie-mint-cream-strawberry"],["Alcremie Mint Berry","alcremie-mint-cream-berry"],["Alcremie Mint Love","alcremie-mint-cream-love"],["Alcremie Mint Clover","alcremie-mint-cream-clover"],["Alcremie Mint Flower","alcremie-mint-cream-flower"],["Alcremie Mint Ribbon","alcremie-mint-cream-ribbon"],["Alcremie Lemon Strawberry","alcremie-lemon-cream-strawberry"],["Alcremie Lemon Berry","alcremie-lemon-cream-berry"],["Alcremie Lemon Love","alcremie-lemon-cream-love"],["Alcremie Lemon Clover","alcremie-lemon-cream-clover"],["Alcremie Lemon Flower","alcremie-lemon-cream-flower"],["Alcremie Lemon Ribbon","alcremie-lemon-cream-ribbon"],["Alcremie Salted Strawberry","alcremie-salted-cream-strawberry"],["Alcremie Salted Berry","alcremie-salted-cream-berry"],["Alcremie Salted Love","alcremie-salted-cream-love"],["Alcremie Salted Clover","alcremie-salted-cream-clover"],["Alcremie Salted Flower","alcremie-salted-cream-flower"],["Alcremie Salted Ribbon","alcremie-salted-cream-ribbon"],["Alcremie Ruby Swirl Love","alcremie-ruby-swirl-love"],["Alcremie Ruby Swirl Clover","alcremie-ruby-swirl-clover"],["Alcremie Ruby Swirl Flower","alcremie-ruby-swirl-flower"]]},
+{n:34,sk:"species",p:[["Alcremie Ruby Swirl Ribbon","alcremie-ruby-swirl-ribbon"],["Alcremie Caramel Strawberry","alcremie-caramel-swirl-strawberry"],["Alcremie Caramel Berry","alcremie-caramel-swirl-berry"],["Alcremie Caramel Love","alcremie-caramel-swirl-love"],["Alcremie Caramel Clover","alcremie-caramel-swirl-clover"],["Alcremie Caramel Flower","alcremie-caramel-swirl-flower"],["Alcremie Caramel Ribbon","alcremie-caramel-swirl-ribbon"],["Alcremie Rainbow Strawberry","alcremie-rainbow-swirl-strawberry"],["Alcremie Rainbow Berry","alcremie-rainbow-swirl-berry"],["Alcremie Rainbow Love","alcremie-rainbow-swirl-love"],["Alcremie Rainbow Clover","alcremie-rainbow-swirl-clover"],["Alcremie Rainbow Flower","alcremie-rainbow-swirl-flower"],["Alcremie Rainbow Ribbon","alcremie-rainbow-swirl-ribbon"],["Falinks","falinks"],["Pincurchin","pincurchin"],["Snom","snom"],["Frosmoth","frosmoth"],["Stonjourner","stonjourner"],["Indeedee (M)","indeedee-m"],["Morpeko","morpeko-full-belly"],["Cufant","cufant"],["Copperajah (Gigantamax)","copperajah"],["Dracozolt","dracozolt"],["Arctozolt","arctozolt"],["Dracovish","dracovish"],["Arctovish","arctovish"],["Duraludon (Gigantamax)","duraludon"],["Dreepy","dreepy"],["Drakloak","drakloak"],["Dragapult","dragapult"]]},
+{n:35,sk:"species",p:[["Zacian","zacian"],["Zamazenta","zamazenta"],["Eternatus","eternatus"],["Kubfu","kubfu"],["Zarude","zarude"],["Zarude Dada","zarude-dada"],["Regieleki","regieleki"],["Regidrago","regidrago"],["Glastrier","glastrier"],["Spectrier","spectrier"],["Calyrex","calyrex"],["Wyrdeer","wyrdeer"],["Kleavor","kleavor"],["Ursaluna","ursaluna"],["Ursaluna Blood Moon","ursaluna-bloodmoon"],["Basculegion (M)","basculegion"],["Sneasler","sneasler"],["Overqwil","overqwil"],["Enamorus","enamorus-incarnate"],["Sprigatito","sprigatito"],["Floragato","floragato"],["Meowscarada","meowscarada"],["Fuecoco","fuecoco"],["Crocalor","crocalor"],["Skeledirge","skeledirge"],["Quaxly","quaxly"],["Quaxwell","quaxwell"],["Quaquaval","quaquaval"],["Lechonk","lechonk"],["Oinkologne (M)","oinkologne"]]},
+{n:36,sk:"species",p:[["Tarountula","tarountula"],["Spidops","spidops"],["Nymble","nymble"],["Lokix","lokix"],["Pawmi","pawmi"],["Pawmo","pawmo"],["Pawmot","pawmot"],["Tandemaus","tandemaus"],["Maushold","maushold-family3"],["Maushold (Family of Four)","maushold-family4"],["Fidough","fidough"],["Dachsbun","dachsbun"],["Smoliv","smoliv"],["Dolliv","dolliv"],["Arboliva","arboliva"],["Squawkabilly","squawkabilly-green"],["Nacli","nacli"],["Naclstack","naclstack"],["Garganacl","garganacl"],["Charcadet","charcadet"],["Armarouge","armarouge"],["Ceruledge","ceruledge"],["Tadbulb","tadbulb"],["Bellibolt","bellibolt"],["Wattrel","wattrel"],["Kilowattrel","kilowattrel"],["Maschiff","maschiff"],["Mabosstiff","mabosstiff"],["Shroodle","shroodle"],["Grafaiai","grafaiai"]]},
+{n:37,sk:"species",p:[["Bramblin","bramblin"],["Brambleghast","brambleghast"],["Toedscool","toedscool"],["Toedscruel","toedscruel"],["Klawf","klawf"],["Scovillain","scovillain"],["Rellor","rellor"],["Rabsca","rabsca"],["Flittle","flittle"],["Espathra","espathra"],["Tinkatink","tinkatink"],["Tinkatuff","tinkatuff"],["Tinkaton","tinkaton"],["Wiglett","wiglett"],["Wugtrio","wugtrio"],["Bombirdier","bombirdier"],["Finizen","finizen"],["Palafin","palafin"],["Varoom","varoom"],["Revavroom","revavroom"],["Cyclizar","cyclizar"],["Orthworm","orthworm"],["Glimmet","glimmet"],["Glimmora","glimmora"],["Greavard","greavard"],["Houndstone","houndstone"],["Flamigo","flamigo"],["Cetoddle","cetoddle"],["Cetitan","cetitan"],["Veluza","veluza"]]},
+{n:38,sk:"species",p:[["Dondozo","dondozo"],["Tatsugiri","tatsugiri"],["Tatsugiri Droopy","tatsugiri-droopy"],["Tatsugiri Stretchy","tatsugiri-stretchy"],["Annihilape","annihilape"],["Clodsire","clodsire"],["Farigiraf","farigiraf"],["Dudunsparce","dudunsparce"],["Dudunsparce 3-Seg","dudunsparce-three-segment"],["Kingambit","kingambit"],["Great Tusk","great-tusk"],["Scream Tail","scream-tail"],["Brute Bonnet","brute-bonnet"],["Flutter Mane","flutter-mane"],["Slither Wing","slither-wing"],["Sandy Shocks","sandy-shocks"],["Iron Treads","iron-treads"],["Iron Bundle","iron-bundle"],["Iron Hands","iron-hands"],["Iron Jugulis","iron-jugulis"],["Iron Moth","iron-moth"],["Iron Thorns","iron-thorns"],["Frigibax","frigibax"],["Arctibax","arctibax"],["Baxcalibur","baxcalibur"],["Gimmighoul","gimmighoul-chest"],["Gholdengo","gholdengo"],["Wo-Chien","wo-chien"],["Chien-Pao","chien-pao"],["Ting-Lu","ting-lu"]]},
+{n:39,sk:"species",p:[["Chi-Yu","chi-yu"],["Roaring Moon","roaring-moon"],["Iron Valiant","iron-valiant"],["Koraidon","koraidon"],["Miraidon","miraidon"],["Walking Wake","walking-wake"],["Iron Leaves","iron-leaves"],["Dipplin","dipplin"],["Poltchageist","poltchageist"],["Sinistcha","sinistcha"],["Sinistcha Masterpiece","sinistcha"],["Okidogi","okidogi"],["Munkidori","munkidori"],["Fezandipiti","fezandipiti"],["Archaludon","archaludon"],["Hydrapple","hydrapple"],["Gouging Fire","gouging-fire"],["Raging Bolt","raging-bolt"],["Iron Boulder","iron-boulder"],["Iron Crown","iron-crown"],["Terapagos","terapagos"],["Pecharunt","pecharunt"]]},
+{n:40,sk:"forms",p:[["Alolan Rattata","rattata-alolan"],["Alolan Raticate","raticate-alolan"],["Pikachu Orig Cap","pikachu-original-cap"],["Pikachu Hoenn Cap","pikachu-hoenn-cap"],["Pikachu Sinnoh Cap","pikachu-sinnoh-cap"],["Pikachu Unova Cap","pikachu-unova-cap"],["Pikachu Kalos Cap","pikachu-kalos-cap"],["Pikachu Alola Cap","pikachu-alola-cap"],["Pikachu Partner Cap","pikachu-partner-cap"],["Pikachu World Cap","pikachu-world-cap"],["Alolan Raichu","raichu-alolan"],["Alolan Sandshrew","sandshrew-alolan"],["Alolan Sandslash","sandslash-alolan"],["Alolan Vulpix","vulpix-alolan"],["Alolan Ninetales","ninetales-alolan"],["Alolan Diglett","diglett-alolan"],["Alolan Dugtrio","dugtrio-alolan"],["Alolan Meowth","meowth-alolan"],["Galarian Meowth","meowth-galarian"],["Alolan Persian","persian-alolan"],["Hisuian Growlithe","growlithe-hisuian"],["Hisuian Arcanine","arcanine-hisuian"],["Alolan Geodude","geodude-alolan"],["Alolan Graveler","graveler-alolan"],["Alolan Golem","golem-alolan"],["Galarian Ponyta","ponyta-galarian"],["Galarian Rapidash","rapidash-galarian"],["Galarian Slowpoke","slowpoke-galarian"],["Galarian Slowbro","slowbro-galarian"],["Galarian Farfetch'd","farfetchd-galarian"]]},
+{n:41,sk:"forms",p:[["Alolan Grimer","grimer-alolan"],["Alolan Muk","muk-alolan"],["Hisuian Voltorb","voltorb-hisuian"],["Hisuian Electrode","electrode-hisuian"],["Alolan Exeggutor","exeggutor-alolan"],["Alolan Marowak","marowak-alolan"],["Galarian Weezing","weezing-galarian"],["Galarian Mr. Mime","mr-mime-galarian"],["Paldean Tauros","tauros-paldean"],["Galarian Articuno","articuno-galarian"],["Galarian Zapdos","zapdos-galarian"],["Galarian Moltres","moltres-galarian"],["Hisuian Typhlosion","typhlosion-hisuian"],["Paldean Wooper","wooper-paldean"],["Galarian Slowking","slowking-galarian"],["Hisuian Qwilfish","qwilfish-hisuian"],["Hisuian Sneasel (M)","sneasel-hisuian"],["Galarian Corsola","corsola-galarian"],["Galarian Zigzagoon","zigzagoon-galarian"],["Galarian Linoone","linoone-galarian"],["Burmy Sandy","burmy-sandy"],["Burmy Trash","burmy-trash"],["Wormadam Sandy","wormadam-sandy"],["Wormadam Trash","wormadam-trash"],["Rotom Heat","rotom-heat"],["Rotom Wash","rotom-wash"],["Rotom Frost","rotom-frost"],["Rotom Fan","rotom-fan"],["Rotom Mow","rotom-mow"],["Giratina","giratina-altered"]]},
+{n:42,sk:"forms",p:[["Shaymin Sky","shaymin-sky"],["Hisuian Samurott","samurott-hisuian"],["Hisuian Lilligant","lilligant-hisuian"],["Basculin Blue-Striped","basculin-blue-striped"],["Basculin White-Striped","basculin-white-striped"],["Galarian Darumaka","darumaka-galarian"],["Galarian Darmanitan","darmanitan-galarian-standard"],["Galarian Yamask","yamask-galarian"],["Hisuian Zorua","zorua-hisuian"],["Hisuian Zoroark","zoroark-hisuian"],["Galarian Stunfisk","stunfisk-galarian"],["Hisuian Braviary","braviary-hisuian"],["Tornadus Therian","tornadus-therian"],["Thundurus Therian","thundurus-therian"],["Landorus Therian","landorus-therian"],["Keldeo Resolute","keldeo-resolute"],["Meloetta","meloetta-aria"],["Vivillon Modern","vivillon-modern"],["Vivillon Fancy","vivillon-fancy"],["Flabébé Yellow","flabebe-yellow"],["Flabébé Orange","flabebe-orange"],["Flabébé Blue","flabebe-blue"],["Flabébé White","flabebe-white"],["Floette Yellow","floette-yellow"],["Floette Orange","floette-orange"],["Floette Blue","floette-blue"],["Floette White","floette-white"],["Florges Yellow","florges-yellow"],["Florges Orange","florges-orange"],["Florges Blue","florges-blue"]]},
+{n:43,sk:"forms",p:[["Florges White","florges-white"],["Furfrou Heart","furfrou-heart"],["Furfrou Star","furfrou-star"],["Furfrou Diamond","furfrou-diamond"],["Aegislash","aegislash-shield"],["Hisuian Sliggoo","sliggoo-hisuian"],["Hisuian Goodra","goodra-hisuian"],["Hisuian Avalugg","avalugg-hisuian"],["Hisuian Decidueye","decidueye-hisuian"],["Lycanroc","lycanroc-midday"],["Lycanroc Midnight","lycanroc-midnight"],["Lycanroc Dusk","lycanroc-dusk"],["Minior Orange","minior-orange-core"],["Minior Yellow","minior-yellow-core"],["Minior Blue","minior-blue-core"],["Magearna Original","magearna-original"],["Alcremie Vanilla Star","alcremie-vanilla-cream-star"],["Alcremie Ruby Star","alcremie-ruby-cream-star"],["Alcremie Matcha Star","alcremie-matcha-cream-star"],["Alcremie Mint Star","alcremie-mint-cream-star"],["Alcremie Lemon Star","alcremie-lemon-cream-star"],["Alcremie Salted Star","alcremie-salted-cream-star"],["Alcremie Ruby Swirl Star","alcremie-ruby-swirl-star"],["Alcremie Caramel Star","alcremie-caramel-swirl-star"],["Alcremie Rainbow Star","alcremie-rainbow-swirl-star"],["Eiscue","eiscue-ice"],["Urshifu (Gigantamax)","urshifu-single-strike"],["Urshifu Rapid Strike (Gigantamax)","urshifu-rapid-strike"],["Enamorus Therian","enamorus-therian"],["Squawkabilly Blue","squawkabilly-blue"]]},
+{n:44,sk:"forms",p:[["Squawkabilly Yellow","squawkabilly-yellow"],["Squawkabilly White","squawkabilly-white"],["Capsakid","capsakid"],["Gimmighoul Roaming","gimmighoul-roaming"],["Poltchageist Artisan","poltchageist-artisan"],["Ogerpon","ogerpon-teal"]]},
+{n:45,sk:"females",p:[["Venusaur (F)","venusaur-f"],["Butterfree (F)","butterfree-f"],["Rattata (F)","rattata-f"],["Raticate (F)","raticate-f"],["Pikachu (F)","pikachu-f"],["Raichu (F)","raichu-f"],["Zubat (F)","zubat-f"],["Golbat (F)","golbat-f"],["Gloom (F)","gloom-f"],["Vileplume (F)","vileplume-f"],["Kadabra (F)","kadabra-f"],["Alakazam (F)","alakazam-f"],["Doduo (F)","doduo-f"],["Dodrio (F)","dodrio-f"],["Hypno (F)","hypno-f"],["Rhyhorn (F)","rhyhorn-f"],["Rhydon (F)","rhydon-f"],["Goldeen (F)","goldeen-f"],["Seaking (F)","seaking-f"],["Scyther (F)","scyther-f"],["Magikarp (F)","magikarp-f"],["Gyarados (F)","gyarados-f"],["Eevee (F)","eevee-f"],["Meganium (F)","meganium-f"],["Ledyba (F)","ledyba-f"],["Ledian (F)","ledian-f"],["Xatu (F)","xatu-f"],["Sudowoodo (F)","sudowoodo-f"],["Politoed (F)","politoed-f"],["Aipom (F)","aipom-f"]]},
+{n:46,sk:"females",p:[["Wooper (F)","wooper-f"],["Quagsire (F)","quagsire-f"],["Murkrow (F)","murkrow-f"],["Wobbuffet (F)","wobbuffet-f"],["Girafarig (F)","girafarig-f"],["Gligar (F)","gligar-f"],["Steelix (F)","steelix-f"],["Scizor (F)","scizor-f"],["Heracross (F)","heracross-f"],["Sneasel (F)","sneasel-f"],["Hisuian Sneasel (F)","sneasel-hisui-f"],["Ursaring (F)","ursaring-f"],["Piloswine (F)","piloswine-f"],["Octillery (F)","octillery-f"],["Houndoom (F)","houndoom-f"],["Donphan (F)","donphan-f"],["Torchic (F)","torchic-f"],["Combusken (F)","combusken-f"],["Blaziken (F)","blaziken-f"],["Beautifly (F)","beautifly-f"],["Dustox (F)","dustox-f"],["Ludicolo (F)","ludicolo-f"],["Nuzleaf (F)","nuzleaf-f"],["Shiftry (F)","shiftry-f"],["Meditite (F)","meditite-f"],["Medicham (F)","medicham-f"],["Roselia (F)","roselia-f"],["Gulpin (F)","gulpin-f"],["Swalot (F)","swalot-f"],["Numel (F)","numel-f"]]},
+{n:47,sk:"females",p:[["Camerupt (F)","camerupt-f"],["Cacturne (F)","cacturne-f"],["Milotic (F)","milotic-f"],["Relicanth (F)","relicanth-f"],["Starly (F)","starly-f"],["Staravia (F)","staravia-f"],["Staraptor (F)","staraptor-f"],["Bidoof (F)","bidoof-f"],["Bibarel (F)","bibarel-f"],["Kricketot (F)","kricketot-f"],["Kricketune (F)","kricketune-f"],["Shinx (F)","shinx-f"],["Luxio (F)","luxio-f"],["Luxray (F)","luxray-f"],["Roserade (F)","roserade-f"],["Combee (F)","combee-f"],["Pachirisu (F)","pachirisu-f"],["Buizel (F)","buizel-f"],["Floatzel (F)","floatzel-f"],["Ambipom (F)","ambipom-f"],["Gible (F)","gible-f"],["Gabite (F)","gabite-f"],["Garchomp (F)","garchomp-f"],["Hippopotas (F)","hippopotas-f"],["Hippowdon (F)","hippowdon-f"],["Croagunk (F)","croagunk-f"],["Toxicroak (F)","toxicroak-f"],["Finneon (F)","finneon-f"],["Lumineon (F)","lumineon-f"],["Snover (F)","snover-f"]]},
+{n:48,sk:"females",p:[["Abomasnow (F)","abomasnow-f"],["Weavile (F)","weavile-f"],["Rhyperior (F)","rhyperior-f"],["Tangrowth (F)","tangrowth-f"],["Mamoswine (F)","mamoswine-f"],["Unfezant (F)","unfezant-f"],["Frillish (F)","frillish-f"],["Jellicent (F)","jellicent-f"],["Pyroar (F)","pyroar-f"],["Meowstic (F)","meowstic-f"],["Indeedee (F)","indeedee-f"],["Basculegion (F)","basculegion-f"],["Oinkologne (F)","oinkologne-f"]]}
 ];
 
 const SWSH_BOXES=[
@@ -1474,6 +1196,7 @@ const SWSH_BOXES=[
   ]}
 ];
 const SWSH_SECTION_LABELS={galar:"Galar",ioa:"Isle of Armor",ct:"Crown Tundra"};
+const BD_SECTION_LABELS={species:"Species",forms:"Forms",females:"Females"};
 const LZA_SECTION_LABELS={lumiose:"Lumiose",hyperspace:"Hyperspace"};
 
 
@@ -2153,7 +1876,7 @@ function importData() {
           // Legacy format: single national dex object
           const count = Object.keys(all).length;
           if (confirm(`Import ${count} caught Pokémon (National Dex only)? This will replace your national dex progress.`)) {
-            localStorage.setItem('livingdex_pdb_v1', JSON.stringify(all));
+            localStorage.setItem('livingdex_pdb_v2', JSON.stringify(all));
             delete _caughtCache['dex'];
             render(); updateTileCounts();
             alert(`Imported ${count} caught Pokémon successfully!`);
@@ -2444,16 +2167,16 @@ const SV_SECTION_LABELS={paldea:"Paldea",kitakami:"The Teal Mask",blueberry:"The
 
 const DEXES = {
   dex: {
-    key: 'livingdex_pdb_v1',
-    getData: () => BD,                         // [{n, p:[name,slug][]}]
-    flatData: null,                             // not flat
-    boxSize: null,                              // boxes already in data
-    idPrefix: 'b',                             // cell id: b{n}_{name}
+    key: 'livingdex_pdb_v2',
+    getData: () => BD,
+    flatData: null,
+    boxSize: null,
+    idPrefix: '',                              // slug-based cell ids
     containerId: 'boxes',
     searchId: 'srch',
     statsIds: { cc:'cc', tc:'tc', pct:'pct', mbar:'mbar' },
     tileIds:  { fill:'tile-fill-dex', pct:'tile-pct-dex', count:'tile-count-dex' },
-    sections: null,
+    sections: BD_SECTION_LABELS,
   },
   swsh: {
     key: 'swshdex_v1',
@@ -2567,16 +2290,17 @@ const DEXES = {
     sections: LZA_SECTION_LABELS,
   },
   shiny: {
-    key: 'livingdex_shiny_home',
+    key: 'livingdex_shiny_v2',
     getData: () => BD,
     flatData: null,
     boxSize: null,
-    idPrefix: 'shiny',
+    idPrefix: '',                              // slug-based cell ids
     containerId: 'shiny-boxes',
     searchId: 'shiny-srch',
     statsIds: { cc:'shiny-cc', tc:'shiny-tc', pct:'shiny-pct', mbar:'shiny-mbar' },
     tileIds:  { fill:'tile-fill-shiny', pct:'tile-pct-shiny', count:'tile-count-shiny' },
     lockFn: isShinyLocked,
+    sections: BD_SECTION_LABELS,
   },
 };
 
@@ -2659,6 +2383,7 @@ function renderDex(dexId) {
       currentSection = box.sk;
       sectionWrapper = document.createElement('div');
       sectionWrapper.className = 'swsh-section-wrap';
+      sectionWrapper.dataset.section = box.sk;
       container.appendChild(sectionWrapper);
     }
 
@@ -2865,27 +2590,25 @@ function updateDexBreakdown() {
   const strip = document.getElementById('bkd-strip-dex');
   if (!strip || strip.style.display === 'none') return;
   const caught = getCaught('dex');
-  const totals = {national:0, forms:0, gender:0, gmax:0};
-  const counts  = {national:0, forms:0, gender:0, gmax:0};
+  const totals = {species:0, forms:0, females:0};
+  const counts  = {species:0, forms:0, females:0};
   BD.forEach(box => {
+    const sk = box.sk; // 'species' | 'forms' | 'females'
     box.p.forEach(([name, slug]) => {
-      const cats = classifyBDEntry(name, slug);
       const isCaught = !!caught[getCellId('dex', box.n, name, slug)];
-      cats.forEach(cat => {
-        totals[cat]++;
-        if (isCaught) counts[cat]++;
-      });
+      totals[sk]++;
+      if (isCaught) counts[sk]++;
     });
   });
-  ['national','forms','gender','gmax'].forEach(key => {
+  ['species','forms','females'].forEach(key => {
     const c = counts[key], t = totals[key];
     const pct = t > 0 ? Math.round(c/t*100) : 0;
-    const pctEl  = document.getElementById('bkd-pct-' + key);
-    const subEl  = document.getElementById('bkd-' + key);
-    const barEl  = document.getElementById('bkd-bar-' + key);
-    if (pctEl)  pctEl.textContent = pct + '%';
-    if (subEl)  subEl.textContent = c + '/' + t;
-    if (barEl)  barEl.style.width = pct + '%';
+    const pctEl = document.getElementById('bkd-pct-' + key);
+    const subEl = document.getElementById('bkd-' + key);
+    const barEl = document.getElementById('bkd-bar-' + key);
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (subEl) subEl.textContent = c + '/' + t;
+    if (barEl) barEl.style.width = pct + '%';
   });
 }
 
@@ -2893,28 +2616,61 @@ function updateShinyBreakdown() {
   const strip = document.getElementById('bkd-strip-shiny');
   if (!strip || strip.style.display === 'none') return;
   const caught = getCaught('shiny');
-  const totals = {national:0, forms:0, gender:0, gmax:0};
-  const counts  = {national:0, forms:0, gender:0, gmax:0};
+  const totals = {species:0, forms:0, females:0};
+  const counts  = {species:0, forms:0, females:0};
   BD.forEach(box => {
+    const sk = box.sk;
     box.p.forEach(([name, slug]) => {
-      if (isShinyLocked(name, slug)) return; // locked entries are blank — exclude from totals
-      const cats = classifyBDEntry(name, slug);
+      if (isShinyLocked(name, slug)) return; // locked entries excluded from totals
       const isCaught = !!caught[getCellId('shiny', box.n, name, slug)];
-      cats.forEach(cat => {
-        totals[cat]++;
-        if (isCaught) counts[cat]++;
-      });
+      totals[sk]++;
+      if (isCaught) counts[sk]++;
     });
   });
-  ['national','forms','gender','gmax'].forEach(key => {
+  ['species','forms','females'].forEach(key => {
     const c = counts[key], t = totals[key];
     const pct = t > 0 ? Math.round(c/t*100) : 0;
-    const pctEl  = document.getElementById('shiny-bkd-pct-' + key);
-    const subEl  = document.getElementById('shiny-bkd-' + key);
-    const barEl  = document.getElementById('shiny-bkd-bar-' + key);
-    if (pctEl)  pctEl.textContent = pct + '%';
-    if (subEl)  subEl.textContent = c + '/' + t;
-    if (barEl)  barEl.style.width = pct + '%';
+    const pctEl = document.getElementById('shiny-bkd-pct-' + key);
+    const subEl = document.getElementById('shiny-bkd-' + key);
+    const barEl = document.getElementById('shiny-bkd-bar-' + key);
+    if (pctEl) pctEl.textContent = pct + '%';
+    if (subEl) subEl.textContent = c + '/' + t;
+    if (barEl) barEl.style.width = pct + '%';
+  });
+}
+
+// Section filter — toggled by clicking a bkd chip
+// activeFilters tracks which sections are visible per dex
+const _activeSectionFilters = {};
+
+function toggleSectionFilter(dexId, section, chipEl) {
+  const cfg = DEXES[dexId];
+  if (!cfg || !cfg.sections) return;
+  const containerId = cfg.containerId;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Toggle set of active filters for this dex
+  if (!_activeSectionFilters[dexId]) _activeSectionFilters[dexId] = new Set();
+  const active = _activeSectionFilters[dexId];
+
+  if (active.has(section)) {
+    active.delete(section);
+    chipEl.classList.remove('active');
+  } else {
+    active.add(section);
+    chipEl.classList.add('active');
+  }
+
+  // Apply: show all sections when nothing is active (all-view), otherwise only active ones
+  const wrappers = container.querySelectorAll('.swsh-section-wrap');
+  wrappers.forEach(wrap => {
+    const wSec = wrap.dataset.section;
+    if (active.size === 0 || active.has(wSec)) {
+      wrap.style.display = '';
+    } else {
+      wrap.style.display = 'none';
+    }
   });
 }
 
@@ -3586,25 +3342,20 @@ if ('serviceWorker' in navigator) {
     </div>
     <div class="pbar-wrap"><div class="pbar-fill" id="shiny-mbar" style="width:0%"></div></div>
     <div class="bkd-strip" id="bkd-strip-shiny" style="display:none">
-      <div class="bkd-chip">
-        <span class="bkd-chip-label">National</span>
-        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-national">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-national">0%</span></div>
-        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-national" style="width:0%"></div></div>
+      <div class="bkd-chip" data-filter-dex="shiny" data-section="species" onclick="toggleSectionFilter('shiny','species',this)">
+        <span class="bkd-chip-label">Species</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-species">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-species">0%</span></div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-species" style="width:0%"></div></div>
       </div>
-      <div class="bkd-chip">
+      <div class="bkd-chip" data-filter-dex="shiny" data-section="forms" onclick="toggleSectionFilter('shiny','forms',this)">
         <span class="bkd-chip-label">Forms</span>
         <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-forms">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-forms">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-forms" style="width:0%"></div></div>
       </div>
-      <div class="bkd-chip">
-        <span class="bkd-chip-label">Gender</span>
-        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-gender">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-gender">0%</span></div>
-        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gender" style="width:0%"></div></div>
-      </div>
-      <div class="bkd-chip">
-        <span class="bkd-chip-label">G-Max</span>
-        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-gmax">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-gmax">0%</span></div>
-        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gmax" style="width:0%"></div></div>
+      <div class="bkd-chip" data-filter-dex="shiny" data-section="females" onclick="toggleSectionFilter('shiny','females',this)">
+        <span class="bkd-chip-label">Females</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-females">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-females">0%</span></div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-females" style="width:0%"></div></div>
       </div>
     </div>
     <div class="controls">
