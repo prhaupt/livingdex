@@ -3117,6 +3117,8 @@ function openDex(id) {
   activeTab = id;
   renderDex(id);
   window.scrollTo(0, 0);
+  // Sync in background; re-render this dex if cloud had new catches
+  if (_sbUser) syncFromSupabase();
 }
 
 
@@ -3196,7 +3198,10 @@ async function syncFromSupabase() {
 
     if (changed.size) {
       updateTileCounts();
-      if (changed.has(activePage)) renderDex(activePage);
+      // Re-render the open dex if it received new catches
+      if (activePage && activePage !== 'landing' && changed.has(activePage)) {
+        renderDex(activePage);
+      }
     }
     setSyncStatus('synced');
   } catch (e) {
