@@ -560,15 +560,16 @@
 #page-shiny .pbar-fill{background:linear-gradient(90deg,#a060e0,#e060c0)}
 #page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
 .bkd-strip { display:flex; gap:5px; padding:5px 0 2px; }
-.bkd-chip { flex:1; background:rgba(255,255,255,0.4); border-radius:7px; padding:5px 6px 4px; border:1px solid rgba(0,0,0,0.06); min-width:0; }
-.bkd-chip-label { font-size:8px; font-weight:500; text-transform:uppercase; letter-spacing:.5px; color:#aaa; margin-bottom:3px; }
-.bkd-chip-bar { height:2px; background:rgba(0,0,0,0.08); border-radius:2px; overflow:hidden; margin-bottom:4px; }
+.bkd-chip { flex:1; background:transparent; border-radius:6px; padding:5px 6px 4px; border:1px solid rgba(0,0,0,0.07); min-width:0; }
+.bkd-chip-label { font-size:8px; font-weight:400; text-transform:uppercase; letter-spacing:.4px; color:#bbb; margin-bottom:3px; }
+.bkd-chip-bar { height:2px; background:rgba(0,0,0,0.07); border-radius:2px; overflow:hidden; margin-bottom:4px; }
 .bkd-chip-fill { height:100%; border-radius:2px; background:#1a7a5e; transition:width .3s; }
 .bkd-chip-count { display:flex; align-items:baseline; gap:3px; }
-.bkd-chip-pct { font-size:11px; font-weight:600; color:#1a7a5e; line-height:1; }
-.bkd-chip-sub { font-size:8.5px; color:#bbb; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bkd-chip-pct { font-size:10.5px; font-weight:500; color:#555; line-height:1; }
+.bkd-chip-sub { font-size:8px; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #page-shiny .bkd-chip-fill { background:#9050d0; }
-#page-shiny .bkd-chip-pct  { color:#9050d0; }
+.bkd-expand { background:none; border:none; cursor:pointer; padding:0 0 0 5px; color:#bbb; font-size:10px; line-height:1; transition:transform .2s; flex-shrink:0; }
+.bkd-expand.open { transform:rotate(180deg); }
 
 .cell.shiny-locked{cursor:default;pointer-events:none;background:transparent;border-color:transparent}
 .cell.shiny-locked img{display:none}
@@ -867,10 +868,11 @@
       <div class="stats-row">
         <div class="pill"><strong id="cc">0</strong> / <strong id="tc">0</strong></div>
         <div class="pill"><strong id="pct">0%</strong></div>
+        <button class="bkd-expand" id="bkd-expand-dex" onclick="toggleBkdStrip('dex')" title="Category breakdown">▾</button>
       </div>
     </div>
     <div class="pbar-wrap"><div class="pbar-fill" id="mbar" style="width:0%"></div></div>
-    <div class="bkd-strip">
+    <div class="bkd-strip" id="bkd-strip-dex" style="display:none">
       <div class="bkd-chip">
         <div class="bkd-chip-label">National</div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-national" style="width:0%"></div></div>
@@ -2772,7 +2774,22 @@ function classifyBDEntry(name, slug) {
   return ['national'];
 }
 
+function toggleBkdStrip(dexId) {
+  const strip = document.getElementById('bkd-strip-' + dexId);
+  const btn   = document.getElementById('bkd-expand-' + dexId);
+  if (!strip) return;
+  const opening = strip.style.display === 'none';
+  strip.style.display = opening ? 'flex' : 'none';
+  if (btn) btn.classList.toggle('open', opening);
+  if (opening) {
+    if (dexId === 'dex')   updateDexBreakdown();
+    if (dexId === 'shiny') updateShinyBreakdown();
+  }
+}
+
 function updateDexBreakdown() {
+  const strip = document.getElementById('bkd-strip-dex');
+  if (!strip || strip.style.display === 'none') return;
   const caught = getCaught('dex');
   const totals = {national:0, forms:0, gender:0, gmax:0};
   const counts  = {national:0, forms:0, gender:0, gmax:0};
@@ -2799,6 +2816,8 @@ function updateDexBreakdown() {
 }
 
 function updateShinyBreakdown() {
+  const strip = document.getElementById('bkd-strip-shiny');
+  if (!strip || strip.style.display === 'none') return;
   const caught = getCaught('shiny');
   const totals = {national:0, forms:0, gender:0, gmax:0};
   const counts  = {national:0, forms:0, gender:0, gmax:0};
@@ -3280,10 +3299,11 @@ if ('serviceWorker' in navigator) {
       <div class="stats-row">
         <div class="pill"><strong id="shiny-cc">0</strong> / <strong id="shiny-tc">0</strong></div>
         <div class="pill"><strong id="shiny-pct">0%</strong></div>
+        <button class="bkd-expand" id="bkd-expand-shiny" onclick="toggleBkdStrip('shiny')" title="Category breakdown">▾</button>
       </div>
     </div>
     <div class="pbar-wrap"><div class="pbar-fill" id="shiny-mbar" style="width:0%"></div></div>
-    <div class="bkd-strip">
+    <div class="bkd-strip" id="bkd-strip-shiny" style="display:none">
       <div class="bkd-chip">
         <div class="bkd-chip-label">National</div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-national" style="width:0%"></div></div>
