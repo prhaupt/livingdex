@@ -559,6 +559,14 @@
 #page-shiny .pbar-wrap{background:rgba(0,0,0,0.08)}
 #page-shiny .pbar-fill{background:linear-gradient(90deg,#a060e0,#e060c0)}
 #page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
+.dex-breakdown { padding: 8px 0 4px; border-top: 1px solid rgba(0,0,0,0.07); margin-top: 6px; }
+.bkd-row { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.bkd-label { font-size: 11px; color: #444; min-width: 85px; }
+.bkd-bar-wrap { flex: 1; height: 3px; background: rgba(0,0,0,0.10); border-radius: 2px; overflow: hidden; }
+.bkd-bar-fill { height: 100%; background: #1a7a5e; border-radius: 2px; transition: width .3s; }
+.bkd-count { font-size: 11px; color: #666; min-width: 68px; text-align: right; white-space: nowrap; }
+.bkd-toggle-btn { font-size: 11px; padding: 5px 10px; }
+
 .cell.shiny-locked{cursor:default;pointer-events:none;background:transparent;border-color:transparent}
 .cell.shiny-locked img{display:none}
 .cell.shiny-locked .pname{display:none}
@@ -861,6 +869,14 @@
     <div class="pbar-wrap"><div class="pbar-fill" id="mbar" style="width:0%"></div></div>
     <div class="controls">
       <input type="text" id="srch" placeholder="Search Pokémon..." oninput="render()">
+      <button class="controls button bkd-toggle-btn" onclick="toggleDexBreakdown()" id="bkd-toggle">Categories ▾</button>
+    </div>
+    <div id="dex-breakdown" class="dex-breakdown" style="display:none">
+      <div class="bkd-row"><span class="bkd-label">National</span><div class="bkd-bar-wrap"><div class="bkd-bar-fill" id="bkd-bar-national" style="width:0%"></div></div><span class="bkd-count" id="bkd-national">–</span></div>
+      <div class="bkd-row"><span class="bkd-label">Regional</span><div class="bkd-bar-wrap"><div class="bkd-bar-fill" id="bkd-bar-regional" style="width:0%"></div></div><span class="bkd-count" id="bkd-regional">–</span></div>
+      <div class="bkd-row"><span class="bkd-label">Gender</span><div class="bkd-bar-wrap"><div class="bkd-bar-fill" id="bkd-bar-gender" style="width:0%"></div></div><span class="bkd-count" id="bkd-gender">–</span></div>
+      <div class="bkd-row"><span class="bkd-label">Gigantamax</span><div class="bkd-bar-wrap"><div class="bkd-bar-fill" id="bkd-bar-gmax" style="width:0%"></div></div><span class="bkd-count" id="bkd-gmax">–</span></div>
+      <div class="bkd-row"><span class="bkd-label">Other Forms</span><div class="bkd-bar-wrap"><div class="bkd-bar-fill" id="bkd-bar-other" style="width:0%"></div></div><span class="bkd-count" id="bkd-other">–</span></div>
     </div>
   </div>
   <div class="main">
@@ -2676,6 +2692,7 @@ function updateDexStats(dexId) {
   if (tc) tc.textContent = total;
   if (p)  p.textContent  = pct + '%';
   if (m)  m.style.width  = pct + '%';
+  if (dexId === 'dex') updateDexBreakdown();
 }
 
 // ── UPDATE TILE COUNTS ────────────────────────────────────────
@@ -2705,6 +2722,66 @@ function updateTileCounts() {
     const tile = fill.closest('.dex-tile');
     if (tile) tile.classList.toggle('tile-complete', pct === 100 && total > 0);
   });
+}
+
+// ── HOME DEX CATEGORY BREAKDOWN ──────────────────────────────────────────────
+const _BKD_OTHER_PATTERNS = [
+  'Cap','Vivillon ','Deoxys ','Rotom ','Furfrou ','Flabebe ','Floette ','Florges ',
+  'Pumpkaboo ','Gourgeist ','Alcremie ','Oricorio ','Lycanroc ','Minior ',
+  'Toxtricity Low','Sinistea ','Polteageist ','Poltchageist ','Sinistcha ',
+  'Tatsugiri ','Squawkabilly ','Maushold (','Ursaluna Blood','Magearna Original',
+  'Zarude Dada','Battle Bond','Paldean Tauros','Tauros Blaze','Tauros Aqua',
+  'Calyrex Ice','Calyrex Shadow','Keldeo Resolute','Meloetta Pirouette',
+  'Shaymin Sky','Giratina Origin','Basculin Blue','Basculin White',
+  'Deerling Summer','Deerling Autumn','Deerling Winter',
+  'Sawsbuck Summer','Sawsbuck Autumn','Sawsbuck Winter',
+  'Gimmighoul Roaming','Aegislash Blade',
+  'Ogerpon Wellspring','Ogerpon Hearthflame','Ogerpon Cornerstone',
+  'Eiscue No Ice','Morpeko Hangry','Darmanitan Zen',
+];
+const _BKD_OTHER_SLUG = /-(east|incarnate|therian|resolute|heat|wash|frost|fan|mow|antique|artisan|masterpiece|chest|roaming|low-key|amped|hangry|full-belly|noice|blade|confined|unbound|blue-striped|white-striped|red-striped)/;
+
+function classifyBDEntry(name, slug) {
+  if (name.includes('(Gigantamax)')) return 'gmax';
+  if (/-(alolan|galarian|hisuian|paldean|hisui)/.test(slug)) return 'regional';
+  if (slug.endsWith('-f')) return 'gender';
+  for (const p of _BKD_OTHER_PATTERNS) { if (name.includes(p)) return 'other'; }
+  if (/^Unown [^A]/.test(name) || slug.startsWith('unown-')) return 'other';
+  if (_BKD_OTHER_SLUG.test(slug)) return 'other';
+  return 'national';
+}
+
+function updateDexBreakdown() {
+  const panel = document.getElementById('dex-breakdown');
+  if (!panel || panel.style.display === 'none') return;
+  const caught = getCaught('dex');
+  const totals = {national:0,regional:0,gender:0,gmax:0,other:0};
+  const counts  = {national:0,regional:0,gender:0,gmax:0,other:0};
+  BD.forEach(box => {
+    box.p.forEach(([name, slug]) => {
+      const cat = classifyBDEntry(name, slug);
+      totals[cat]++;
+      if (caught[getCellId('dex', box.n, name, slug)]) counts[cat]++;
+    });
+  });
+  ['national','regional','gender','gmax','other'].forEach(key => {
+    const c = counts[key], t = totals[key];
+    const pct = t > 0 ? Math.round(c/t*100) : 0;
+    const countEl = document.getElementById('bkd-' + key);
+    const barEl   = document.getElementById('bkd-bar-' + key);
+    if (countEl) countEl.textContent = c + ' / ' + t;
+    if (barEl)   barEl.style.width = pct + '%';
+  });
+}
+
+function toggleDexBreakdown() {
+  const panel = document.getElementById('dex-breakdown');
+  const btn   = document.getElementById('bkd-toggle');
+  if (!panel) return;
+  const opening = panel.style.display === 'none';
+  panel.style.display = opening ? 'block' : 'none';
+  if (btn) btn.textContent = opening ? 'Categories ▴' : 'Categories ▾';
+  if (opening) updateDexBreakdown();
 }
 
 // ── SHIMS for existing callsites ──────────────────────────────
