@@ -551,15 +551,14 @@
 #page-frlg .pbar-fill{background:linear-gradient(90deg,#d05a20,#1a9040)}
 #page-oras .pbar-wrap{background:rgba(0,0,0,0.08)}
 
-.tile-bg-shiny{background:linear-gradient(160deg,#0a081a 0%,#1e1040 30%,#6030a0 58%,#d878d8 82%,#fff4ff 100%)}
-#page-shiny .top-bar{background:linear-gradient(160deg,#0a081a 0%,#1e1040 30%,#6030a0 58%,#d878d8 82%,#fff4ff 100%);border-bottom:none}
-#page-shiny .back-btn{color:rgba(255,255,255,0.9)}
-#page-shiny .pill{color:rgba(255,255,255,0.85)}
-#page-shiny .pill strong{color:#fff;font-weight:700}
-#page-shiny .pbar-wrap{background:rgba(255,255,255,0.15)}
-#page-shiny .pbar-fill{background:linear-gradient(90deg,#c878ff,#ff88cc)}
-#page-shiny input[type=text]{border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);color:#fff}
-#page-shiny input[type=text]::placeholder{color:rgba(255,255,255,0.5)}
+.tile-bg-shiny{background:linear-gradient(160deg,#ede8ff 0%,#ddd0ff 30%,#f0d8ff 60%,#ffe0f8 85%,#fff4ff 100%)}
+#page-shiny .top-bar{background:linear-gradient(160deg,#ede8ff 0%,#ddd0ff 30%,#f0d8ff 60%,#ffe0f8 85%,#fff4ff 100%);border-bottom:none}
+#page-shiny .back-btn{color:rgba(0,0,0,0.65)}
+#page-shiny .pill{color:rgba(0,0,0,0.6)}
+#page-shiny .pill strong{color:rgba(0,0,0,0.8);font-weight:700}
+#page-shiny .pbar-wrap{background:rgba(0,0,0,0.08)}
+#page-shiny .pbar-fill{background:linear-gradient(90deg,#a060e0,#e060c0)}
+#page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
 .cell.shiny-locked{cursor:default;pointer-events:none;background:rgba(0,0,0,0.02);border-color:transparent}
 .cell.shiny-locked img{display:none}
 .cell.shiny-locked .pname{display:none}
@@ -604,8 +603,8 @@
         <img class="tile-sprite" src="https://img.pokemondb.net/sprites/home/shiny/mew.png" alt="Shiny Mew">
       </div>
       <div class="tile-info">
-        <div class="tile-name">✨ Shiny HOME</div>
-        <div class="tile-sub">National Shiny Dex</div>
+        <div class="tile-name">Pokémon HOME</div>
+        <div class="tile-sub">Shiny National Living Dex</div>
         <div class="tile-progress-wrap">
           <div class="tile-bar"><div class="tile-bar-fill" id="tile-fill-shiny" style="width:0%"></div></div>
           <span class="tile-pct" id="tile-pct-shiny">0%</span>
@@ -2593,9 +2592,9 @@ function renderDex(dexId) {
     grid.className = 'grid';
     filtered.forEach(([name, slug]) => {
       const id = getCellId(dexId, box.n, name, slug);
-      const isLocked = lockFn && lockFn(name, slug);
-      if (isLocked) {
-        grid.appendChild(makeShinyCell(name, slug, false, null, null));
+      // Shiny dex: use makeShinyCell for all entries (handles locked blank cells internally)
+      if (lockFn) {
+        grid.appendChild(makeShinyCell(name, slug, !!caught[id], () => toggleCaught(dexId, box.n, name, slug), id));
       } else {
         grid.appendChild(makeCell(name, slug, !!caught[id], () => toggleCaught(dexId, box.n, name, slug), id));
       }
