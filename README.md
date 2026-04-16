@@ -1,6 +1,6 @@
-# LivingDex Tracker
+# LivingHome
 
-A personal Pokémon living dex tracker — installable as a PWA, works offline, and syncs across devices via optional cloud sign-in. Built as a single HTML file with no framework dependencies.
+A Pokémon living dex tracker — installable as a PWA, works offline, and syncs across devices via optional cloud sign-in. Built as a single HTML file with no framework dependencies.
 
 🔗 **Live at:** https://prhaupt.github.io/livingdex/
 
