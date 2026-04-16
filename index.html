@@ -3221,7 +3221,7 @@ async function sbSignIn(email) {
   if (!_sb) return 'Not loaded';
   const { error } = await _sb.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: window.location.origin + window.location.pathname }
+    options: { emailRedirectTo: 'https://prhaupt.github.io/livingdex/' }
   });
   return error?.message ?? null;
 }
