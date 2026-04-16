@@ -1995,7 +1995,7 @@ function renderInfoFromPokeAPI(pokemon, species, evoData, displayName, pokeUrl, 
 
 
 
-function addInfoBtn(cell, name, slug) {
+function addInfoBtn(cell, name, slug, isShiny = false) {
   if (window._touchDevice) return; // touch devices use long press on cell instead
   const btn = document.createElement('div');
   btn.className = 'cell-info-btn';
@@ -2005,14 +2005,14 @@ function addInfoBtn(cell, name, slug) {
   // Click (desktop)
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    openInfoPanel(name, slug);
+    openInfoPanel(name, slug, isShiny);
   });
 
   // Long press (iOS/touch)
   btn.addEventListener('touchstart', e => {
     longPressTimer = setTimeout(() => {
       e.preventDefault();
-      openInfoPanel(name, slug);
+      openInfoPanel(name, slug, isShiny);
     }, 500);
   }, { passive: true });
   btn.addEventListener('touchend', () => clearTimeout(longPressTimer));
@@ -3044,7 +3044,7 @@ function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
   const _fn2 = formatCellName(name);
   lbl.innerHTML = '<span class="pname-base">' + _fn2.base + (_fn2.gender ? '<span class="pname-gender">' + _fn2.gender + '</span>' : '') + '</span>' + (_fn2.tag ? '<span class="pname-tag">' + _fn2.tag + '</span>' : '');
   cell.appendChild(lbl);
-  addInfoBtn(cell, name, slug);
+  addInfoBtn(cell, name, slug, true);
   return cell;
 }
 
