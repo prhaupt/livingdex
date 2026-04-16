@@ -2923,6 +2923,7 @@ function closeDex() {
   activePage = 'landing';
   updateTileCounts();
   window.scrollTo(0, 0);
+  if (_sbUser) syncFromSupabase();
 }
 
 
@@ -3196,12 +3197,11 @@ async function syncFromSupabase() {
       }
     }
 
-    if (changed.size) {
-      updateTileCounts();
-      // Re-render the open dex if it received new catches
-      if (activePage && activePage !== 'landing' && changed.has(activePage)) {
-        renderDex(activePage);
-      }
+    // Always refresh tile counts after sync (catches may have merged)
+    updateTileCounts();
+    // Re-render the open dex if it received new catches
+    if (changed.size && activePage && activePage !== 'landing' && changed.has(activePage)) {
+      renderDex(activePage);
     }
     setSyncStatus('synced');
   } catch (e) {
