@@ -3139,6 +3139,8 @@ const _SB_KEY = 'sb_publishable_84rFNwt2FZPGZPLxGXWQLg_-BDy3AHV';
 let _sb = null;
 let _sbUser = null;
 let _syncing = false;
+let _lastSync = 0;
+const _SYNC_THROTTLE = 30000; // ms — minimum gap between auto-syncs
 
 function initSupabase() {
   if (typeof supabase === 'undefined') { console.warn('Supabase not loaded'); return; }
@@ -3164,12 +3166,17 @@ function initSupabase() {
 }
 
 // Pull cloud → local, push local → cloud (union merge)
-async function syncFromSupabase() {
+async function syncFromSupabase(force = false) {
   if (!_sb || !_sbUser || _syncing) return;
+  if (!force && Date.now() - _lastSync < _SYNC_THROTTLE) return;
   _syncing = true;
+  _lastSync = Date.now();
   setSyncStatus('syncing');
   try {
-    const { data, error } = await _sb.from('catches').select('dex_id,cell_id');
+    // 10s timeout so it never hangs indefinitely
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Sync timeout')), 10000));
+    const fetchP = _sb.from('catches').select('dex_id,cell_id');
+    const { data, error } = await Promise.race([fetchP, timeout]);
     if (error) throw error;
 
     // Merge cloud into local
@@ -3251,7 +3258,8 @@ function setSyncStatus(s) {
   if (!dot) return;
   dot.dataset.status = s;
   clearTimeout(_syncTimer);
-  if (s === 'synced') _syncTimer = setTimeout(() => { dot.dataset.status = 'idle'; }, 2500);
+  if (s === 'synced') _syncTimer = setTimeout(() => { dot.dataset.status = 'idle'; }, 2000);
+  if (s === 'error')  _syncTimer = setTimeout(() => { dot.dataset.status = 'idle'; }, 8000);
 }
 
 function updateSyncUI() {
@@ -3613,7 +3621,7 @@ if ('serviceWorker' in navigator) {
       <p id="sb-user-email" style="font-weight:600;color:#1a1a1a;margin-bottom:6px;"></p>
       <p style="margin-bottom:18px">Your catches sync automatically across devices.</p>
       <div class="sb-btns">
-        <button class="sb-primary" onclick="syncFromSupabase()">Sync now</button>
+        <button class="sb-primary" onclick="syncFromSupabase(true)">Sync now</button>
         <button class="sb-secondary" onclick="sbSignOut();closeSyncModal()">Sign out</button>
       </div>
       <div style="margin-top:10px;">
