@@ -550,6 +550,19 @@
 #page-la .pbar-fill{background:linear-gradient(90deg,#2a8878,#9a8030)}
 #page-frlg .pbar-fill{background:linear-gradient(90deg,#d05a20,#1a9040)}
 #page-oras .pbar-wrap{background:rgba(0,0,0,0.08)}
+
+.tile-bg-shiny{background:linear-gradient(160deg,#0a081a 0%,#1e1040 30%,#6030a0 58%,#d878d8 82%,#fff4ff 100%)}
+#page-shiny .top-bar{background:linear-gradient(160deg,#0a081a 0%,#1e1040 30%,#6030a0 58%,#d878d8 82%,#fff4ff 100%);border-bottom:none}
+#page-shiny .back-btn{color:rgba(255,255,255,0.9)}
+#page-shiny .pill{color:rgba(255,255,255,0.85)}
+#page-shiny .pill strong{color:#fff;font-weight:700}
+#page-shiny .pbar-wrap{background:rgba(255,255,255,0.15)}
+#page-shiny .pbar-fill{background:linear-gradient(90deg,#c878ff,#ff88cc)}
+#page-shiny input[type=text]{border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.12);color:#fff}
+#page-shiny input[type=text]::placeholder{color:rgba(255,255,255,0.5)}
+.cell.shiny-locked{cursor:default;pointer-events:none;background:rgba(0,0,0,0.02);border-color:transparent}
+.cell.shiny-locked img{display:none}
+.cell.shiny-locked .pname{display:none}
 </style>
 </head>
 <body>
@@ -583,6 +596,21 @@
           <span class="tile-pct" id="tile-pct-dex">0%</span>
         </div>
         <div class="tile-count" id="tile-count-dex">0 / 1391</div>
+      </div>
+    </div>
+    <!-- Shiny HOME -->
+    <div class="dex-tile" onclick="openDex('shiny')">
+      <div class="tile-bg tile-bg-shiny">
+        <img class="tile-sprite" src="https://img.pokemondb.net/sprites/home/shiny/mew.png" alt="Shiny Mew">
+      </div>
+      <div class="tile-info">
+        <div class="tile-name">✨ Shiny HOME</div>
+        <div class="tile-sub">National Shiny Dex</div>
+        <div class="tile-progress-wrap">
+          <div class="tile-bar"><div class="tile-bar-fill" id="tile-fill-shiny" style="width:0%"></div></div>
+          <span class="tile-pct" id="tile-pct-shiny">0%</span>
+        </div>
+        <div class="tile-count" id="tile-count-shiny">0 / 0</div>
       </div>
     </div>
     <!-- 2. Legends: Z-A (2025) -->
@@ -1344,6 +1372,31 @@ const LZA_SECTION_LABELS={lumiose:"Lumiose",hyperspace:"Hyperspace"};
 
 
 const BASE = "https://img.pokemondb.net/sprites/home/normal/";
+const BASE_SHINY = "https://img.pokemondb.net/sprites/home/shiny/";
+
+// Shiny-locked Pokémon: blank cells in the shiny dex (unobtainable as shiny)
+const SHINY_LOCKED_SLUGS = new Set([
+  // Cap Pikachus (event-only distributions)
+  'pikachu-original-cap','pikachu-hoenn-cap','pikachu-sinnoh-cap',
+  'pikachu-unova-cap','pikachu-kalos-cap','pikachu-alola-cap','pikachu-world-cap',
+  // Mythicals
+  'victini','hoopa-confined','hoopa-unbound','volcanion',
+  'magearna','magearna-original','marshadow','zarude','zarude-dada','pecharunt',
+  // Coded to never appear shiny
+  'cosmog','cosmoem','floette-eternal','vivillon-poke-ball',
+  'melmetal',                                    // only GMax form in our dex
+  'kubfu','urshifu-single-strike','urshifu-rapid-strike',
+  'glastrier','spectrier','calyrex',
+  'ursaluna-bloodmoon','walking-wake','iron-leaves',
+  'okidogi','munkidori','fezandipiti',
+  'ogerpon-teal','ogerpon',
+  'gouging-fire','raging-bolt','iron-boulder','iron-crown',
+  'terapagos',
+]);
+const SHINY_LOCKED_NAMES = new Set(['Greninja Battle Bond']); // shares slug with regular Greninja
+function isShinyLocked(name, slug) {
+  return SHINY_LOCKED_SLUGS.has(slug) || SHINY_LOCKED_NAMES.has(name);
+}
 try { caught = JSON.parse(localStorage.getItem(SK) || "{}"); } catch(e) {}
 
 // Request persistent storage so the browser won't evict data automatically
@@ -2405,6 +2458,18 @@ const DEXES = {
     tileIds:  { fill:'tile-fill-lza', pct:'tile-pct-lza', count:'tile-count-lza' },
     sections: LZA_SECTION_LABELS,
   },
+  shiny: {
+    key: 'livingdex_shiny_home',
+    getData: () => BD,
+    flatData: null,
+    boxSize: null,
+    idPrefix: 'shiny',
+    containerId: 'shiny-boxes',
+    searchId: 'shiny-srch',
+    statsIds: { cc:'shiny-cc', tc:'shiny-tc', pct:'shiny-pct', mbar:'shiny-mbar' },
+    tileIds:  { fill:'tile-fill-shiny', pct:'tile-pct-shiny', count:'tile-count-shiny' },
+    lockFn: isShinyLocked,
+  },
 };
 
 // ── Per-dex caught state (in memory) ─────────────────────────
@@ -2466,9 +2531,13 @@ function renderDex(dexId) {
   let sectionWrapper = null;
   let any = false;
 
+  const lockFn = cfg.lockFn || null;
   boxes.forEach(box => {
     const filtered = box.p.filter(([name, slug]) => {
       const id = getCellId(dexId, box.n, name, slug);
+      const isLocked = lockFn && lockFn(name, slug);
+      // Locked cells: show as blank spacers only when no search/filter active
+      if (isLocked) return !q && fm !== 'cat' && fm !== 'unc';
       if (fm === 'cat' && !caught[id]) return false;
       if (fm === 'unc' && caught[id]) return false;
       if (q && !name.toLowerCase().includes(q) && !slug.includes(q)) return false;
@@ -2485,7 +2554,9 @@ function renderDex(dexId) {
       container.appendChild(sectionWrapper);
     }
 
-    const bc = box.p.filter(([name, slug]) => !!caught[getCellId(dexId, box.n, name, slug)]).length;
+    // Countable = non-locked entries (used for progress denominator)
+    const countable = lockFn ? box.p.filter(([n, s]) => !lockFn(n, s)) : box.p;
+    const bc = countable.filter(([name, slug]) => !!caught[getCellId(dexId, box.n, name, slug)]).length;
     const col_state = col[box.n];
 
     const card = document.createElement('div');
@@ -2502,13 +2573,13 @@ function renderDex(dexId) {
     }
 
     const hdr = document.createElement('div');
-    hdr.className = 'box-hdr' + (bc === box.p.length ? ' complete' : '');
+    hdr.className = 'box-hdr' + (bc === countable.length ? ' complete' : '');
     hdr.id = `${dexId}-box-hdr-${box.n}`;
     hdr.innerHTML = `
       <span class="box-title">${boxTitle}</span>
       <div class="box-right">
-        <span class="box-count">${bc}/${box.p.length}</span>
-        <div class="minibar"><div class="minibar-fill" id="${dexId}-bb-${box.n}" style="width:${Math.round(bc/box.p.length*100)}%"></div></div>
+        <span class="box-count">${bc}/${countable.length}</span>
+        <div class="minibar"><div class="minibar-fill" id="${dexId}-bb-${box.n}" style="width:${Math.round(bc/Math.max(countable.length,1)*100)}%"></div></div>
         <span class="arrow">${col_state ? '▸' : '▾'}</span>
       </div>`;
     hdr.onclick = () => {
@@ -2522,7 +2593,12 @@ function renderDex(dexId) {
     grid.className = 'grid';
     filtered.forEach(([name, slug]) => {
       const id = getCellId(dexId, box.n, name, slug);
-      grid.appendChild(makeCell(name, slug, !!caught[id], () => toggleCaught(dexId, box.n, name, slug), id));
+      const isLocked = lockFn && lockFn(name, slug);
+      if (isLocked) {
+        grid.appendChild(makeShinyCell(name, slug, false, null, null));
+      } else {
+        grid.appendChild(makeCell(name, slug, !!caught[id], () => toggleCaught(dexId, box.n, name, slug), id));
+      }
     });
     card.appendChild(grid);
     (sectionWrapper || container).appendChild(card);
@@ -2565,13 +2641,15 @@ function updateBoxHdr(dexId, boxN) {
   const boxes = getBoxes(dexId);
   const box = boxes.find(b => b.n === boxN);
   if (!box) return;
-  const bc = box.p.filter(([name, slug]) => !!caught[getCellId(dexId, boxN, name, slug)]).length;
+  const _lockFn = DEXES[dexId].lockFn || null;
+  const _countable = _lockFn ? box.p.filter(([n,s]) => !_lockFn(n,s)) : box.p;
+  const bc = _countable.filter(([name, slug]) => !!caught[getCellId(dexId, boxN, name, slug)]).length;
   const hdr = document.getElementById(`${dexId}-box-hdr-${boxN}`);
   const countEl = hdr?.querySelector('.box-count');
   const miniEl = document.getElementById(`${dexId}-bb-${boxN}`);
-  if (countEl) countEl.textContent = bc + '/' + box.p.length;
-  if (miniEl) miniEl.style.width = Math.round(bc/box.p.length*100) + '%';
-  if (hdr) hdr.className = 'box-hdr' + (bc === box.p.length ? ' complete' : '');
+  if (countEl) countEl.textContent = bc + '/' + _countable.length;
+  if (miniEl) miniEl.style.width = Math.round(bc/Math.max(_countable.length,1)*100) + '%';
+  if (hdr) hdr.className = 'box-hdr' + (bc === _countable.length ? ' complete' : '');
 }
 
 // ── UPDATE DEX STATS (header bar) ────────────────────────────
@@ -2579,10 +2657,15 @@ function updateDexStats(dexId) {
   const cfg = DEXES[dexId];
   const caught = getCaught(dexId);
   const boxes = getBoxes(dexId);
-  const total = boxes.reduce((s, b) => s + b.p.length, 0);
-  // Count unique caught entries
-  const caughtCount = boxes.reduce((s, b) =>
-    s + b.p.filter(([name, slug]) => !!caught[getCellId(dexId, b.n, name, slug)]).length, 0);
+  const _statLockFn = cfg.lockFn || null;
+  const total = boxes.reduce((s, b) => {
+    const cp = _statLockFn ? b.p.filter(([n,sl]) => !_statLockFn(n,sl)) : b.p;
+    return s + cp.length;
+  }, 0);
+  const caughtCount = boxes.reduce((s, b) => {
+    const cp = _statLockFn ? b.p.filter(([n,sl]) => !_statLockFn(n,sl)) : b.p;
+    return s + cp.filter(([name, slug]) => !!caught[getCellId(dexId, b.n, name, slug)]).length;
+  }, 0);
   const pct = total > 0 ? Math.round(caughtCount/total*100) : 0;
   const ids = cfg.statsIds;
   const cc = document.getElementById(ids.cc);
@@ -2604,9 +2687,15 @@ function updateTileCounts() {
     if (!fill) return;
     const caught = getCaught(dexId);
     const boxes = getBoxes(dexId);
-    const total = boxes.reduce((s, b) => s + b.p.length, 0);
-    const caughtCount = boxes.reduce((s, b) =>
-      s + b.p.filter(([name, slug]) => !!caught[getCellId(dexId, b.n, name, slug)]).length, 0);
+    const _tileLockFn = cfg.lockFn || null;
+    const total = boxes.reduce((s, b) => {
+      const cp = _tileLockFn ? b.p.filter(([n,sl]) => !_tileLockFn(n,sl)) : b.p;
+      return s + cp.length;
+    }, 0);
+    const caughtCount = boxes.reduce((s, b) => {
+      const cp = _tileLockFn ? b.p.filter(([n,sl]) => !_tileLockFn(n,sl)) : b.p;
+      return s + cp.filter(([name, slug]) => !!caught[getCellId(dexId, b.n, name, slug)]).length;
+    }, 0);
     const pct = total > 0 ? Math.round(caughtCount/total*100) : 0;
     fill.style.width = pct + '%';
     const pctEl = document.getElementById(cfg.tileIds.pct);
@@ -2737,6 +2826,80 @@ function makeCell(name, slug, isCaught, onClickFn, cellId) {
   return cell;
 }
 
+
+// ── SHINY DEX helpers ─────────────────────────────────────────────────────
+function getShinyImgSrc(slug) {
+  const specialShiny = {
+    'meowstic-m':    'https://img.pokemondb.net/sprites/home/shiny/meowstic-male.png',
+    'meowstic-f':    'https://img.pokemondb.net/sprites/home/shiny/meowstic-female.png',
+    'indeedee-m':    'https://img.pokemondb.net/sprites/home/shiny/indeedee-male.png',
+    'indeedee-f':    'https://img.pokemondb.net/sprites/home/shiny/indeedee-female.png',
+    'oinkologne-f':  'https://img.pokemondb.net/sprites/home/shiny/oinkologne-female.png',
+    'basculegion-f': 'https://img.pokemondb.net/sprites/home/shiny/basculegion-female.png',
+    'floette-eternal': 'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/shiny/floette-eternal.png',
+  };
+  if (specialShiny[slug]) return specialShiny[slug];
+  if (slug === 'unown' || slug.startsWith('unown-')) {
+    const unownSlug = slug === 'unown' ? 'unown-a' : slug;
+    return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/' + unownSlug + '.png';
+  }
+  return BASE_SHINY + slug + '.png';
+}
+
+function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
+  // Shiny-locked: blank placeholder that preserves grid position
+  if (isShinyLocked(name, slug)) {
+    const cell = document.createElement('div');
+    cell.className = 'cell shiny-locked';
+    return cell;
+  }
+  // Normal interactive cell but with shiny sprite
+  const cell = document.createElement('div');
+  cell.className = 'cell' + (isCaught ? ' caught' : '');
+  cell.title = name;
+  if (cellId) cell.id = cellId;
+  cell.onclick = onClickFn;
+
+  let _pressTimer = null;
+  let _pressMoved = false;
+  cell.addEventListener('touchstart', e => {
+    _pressMoved = false;
+    _pressTimer = setTimeout(() => {
+      if (!_pressMoved) { e.preventDefault(); openInfoPanel(name, slug); }
+    }, 500);
+  }, { passive: false });
+  cell.addEventListener('touchmove', () => { _pressMoved = true; clearTimeout(_pressTimer); }, { passive: true });
+  cell.addEventListener('touchend', () => { if (_pressTimer) clearTimeout(_pressTimer); }, { passive: true });
+  cell.addEventListener('contextmenu', e => e.preventDefault());
+
+  const img = document.createElement('img');
+  img.src = getShinyImgSrc(slug);
+  img.alt = name;
+  img.className = isCaught ? '' : 'grey';
+  img.addEventListener('contextmenu', e => e.preventDefault());
+  img.onerror = function() {
+    const fallbackMap = {
+      'darmanitan-galarian-standard': 'darmanitan-galarian',
+      'squawkabilly-green': 'squawkabilly', 'squawkabilly-blue': 'squawkabilly',
+      'squawkabilly-yellow': 'squawkabilly', 'squawkabilly-white': 'squawkabilly',
+      'furfrou-debutante': 'furfrou-deputante', 'mimikyu': 'mimikyu-disguised',
+    };
+    if (fallbackMap[slug] && !this.src.includes(fallbackMap[slug])) {
+      this.src = BASE_SHINY + fallbackMap[slug] + '.png'; return;
+    }
+    this.style.opacity = '0.12';
+    this.onerror = null;
+  };
+  cell.appendChild(img);
+
+  const lbl = document.createElement('div');
+  lbl.className = 'pname';
+  const _fn2 = formatCellName(name);
+  lbl.innerHTML = '<span class="pname-base">' + _fn2.base + (_fn2.gender ? '<span class="pname-gender">' + _fn2.gender + '</span>' : '') + '</span>' + (_fn2.tag ? '<span class="pname-tag">' + _fn2.tag + '</span>' : '');
+  cell.appendChild(lbl);
+  addInfoBtn(cell, name, slug);
+  return cell;
+}
 
 
 
@@ -2991,6 +3154,25 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
+
+<div id="page-shiny" class="page">
+  <div class="top-bar">
+    <div class="top-row">
+      <button class="back-btn" onclick="closeDex()">&#8249; Shiny Living Dex</button>
+      <div class="stats-row">
+        <div class="pill"><strong id="shiny-cc">0</strong> / <strong id="shiny-tc">0</strong></div>
+        <div class="pill"><strong id="shiny-pct">0%</strong></div>
+      </div>
+    </div>
+    <div class="pbar-wrap"><div class="pbar-fill" id="shiny-mbar" style="width:0%"></div></div>
+    <div class="controls">
+      <input type="text" id="shiny-srch" placeholder="Search Pokémon..." oninput="renderDex('shiny')">
+    </div>
+  </div>
+  <div class="main">
+    <div id="shiny-boxes"></div>
+  </div>
+</div>
 
 </body>
 </html>
