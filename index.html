@@ -3135,21 +3135,24 @@ const _SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
 const _SB_KEY = 'sb_publishable_84rFNwt2FZPGZPLxGXWQLg_-BDy3AHV';
 let _sb = null;
 let _sbUser = null;
+let _syncing = false;
 
 function initSupabase() {
   if (typeof supabase === 'undefined') { console.warn('Supabase not loaded'); return; }
   _sb = supabase.createClient(_SB_URL, _SB_KEY);
 
+  // onAuthStateChange handles magic-link sign-in (fires on redirect)
   _sb.auth.onAuthStateChange(async (event, session) => {
     const wasSignedIn = !!_sbUser;
     _sbUser = session?.user ?? null;
     updateSyncUI();
-    if (_sbUser && !wasSignedIn) {
+    if (event === 'SIGNED_IN' && _sbUser && !wasSignedIn) {
       closeSyncModal();
       await syncFromSupabase();
     }
   });
 
+  // getSession restores an existing session on page load
   _sb.auth.getSession().then(({ data: { session } }) => {
     _sbUser = session?.user ?? null;
     updateSyncUI();
@@ -3159,7 +3162,8 @@ function initSupabase() {
 
 // Pull cloud → local, push local → cloud (union merge)
 async function syncFromSupabase() {
-  if (!_sb || !_sbUser) return;
+  if (!_sb || !_sbUser || _syncing) return;
+  _syncing = true;
   setSyncStatus('syncing');
   try {
     const { data, error } = await _sb.from('catches').select('dex_id,cell_id');
@@ -3174,13 +3178,13 @@ async function syncFromSupabase() {
     }
     for (const dexId of changed) saveCaught(dexId);
 
-    // Push local misses to cloud
+    // Push local catches missing from cloud (with explicit user_id)
     const sbSet = new Set(data.map(r => r.dex_id + '|' + r.cell_id));
     const toUpsert = [];
     for (const dexId of Object.keys(DEXES)) {
       for (const cellId of Object.keys(getCaught(dexId))) {
         if (!sbSet.has(dexId + '|' + cellId))
-          toUpsert.push({ dex_id: dexId, cell_id: cellId });
+          toUpsert.push({ user_id: _sbUser.id, dex_id: dexId, cell_id: cellId });
       }
     }
     if (toUpsert.length) {
@@ -3198,6 +3202,8 @@ async function syncFromSupabase() {
   } catch (e) {
     console.error('Sync error:', e);
     setSyncStatus('error');
+  } finally {
+    _syncing = false;
   }
 }
 
@@ -3206,7 +3212,8 @@ async function sbToggle(dexId, cellId, isCaught) {
   if (!_sb || !_sbUser) return;
   try {
     if (isCaught) {
-      await _sb.from('catches').upsert({ dex_id: dexId, cell_id: cellId });
+      // Explicit user_id so RLS and primary key are unambiguous
+      await _sb.from('catches').upsert({ user_id: _sbUser.id, dex_id: dexId, cell_id: cellId });
     } else {
       await _sb.from('catches').delete().eq('dex_id', dexId).eq('cell_id', cellId);
     }
