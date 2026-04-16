@@ -497,15 +497,13 @@
 .app-version { text-align: center; font-size: 11px; color: #bbb; padding-bottom: 20px; letter-spacing: 0.02em; }
 
 /* ── Sync button ─────────────────────────────────────────────── */
-.landing-header { position: relative; }
 #sync-btn {
-  position: absolute; top: 12px; right: 12px;
   display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1);
   border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 500;
-  color: #555; cursor: pointer; max-width: 180px; overflow: hidden;
+  color: #555; cursor: pointer; max-width: 200px; overflow: hidden;
   text-overflow: ellipsis; white-space: nowrap;
-  backdrop-filter: blur(8px); transition: background 0.15s;
+  backdrop-filter: blur(8px); transition: background 0.15s; height: 36px;
 }
 #sync-btn:hover { background: rgba(255,255,255,1); }
 #sync-dot {
@@ -662,10 +660,6 @@
 <!-- Landing Page -->
 <div id="page-landing" class="page active">
   <div class="landing-header">
-    <button id="sync-btn" onclick="openSyncModal()">
-      <span id="sync-dot"></span>
-      <span id="sync-label">☁ Sign in to sync</span>
-    </button>
     <h1 class="landing-title"><img src="icon.png" alt="" width="28" height="28" style="border-radius:7px;vertical-align:middle;margin-right:7px;margin-bottom:2px;">LivingHome</h1>
     <p class="landing-sub">Pokémon collection tracker</p>
   </div>
@@ -930,6 +924,10 @@
     </div>
   </div>
   <div class="landing-footer">
+    <button id="sync-btn" onclick="openSyncModal()">
+      <span id="sync-dot"></span>
+      <span id="sync-label">☁ Sign in to sync</span>
+    </button>
     <button class="footer-btn" onclick="exportData()">Export</button>
     <button class="footer-btn" onclick="importData()">Import</button>
   </div>
