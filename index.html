@@ -2760,8 +2760,7 @@ const _BKD_OTHER_PATTERNS = [
   'Zarude Dada','Battle Bond','Paldean Tauros','Tauros Blaze','Tauros Aqua',
   'Calyrex Ice','Calyrex Shadow','Keldeo Resolute','Meloetta Pirouette',
   'Shaymin Sky','Giratina Origin','Basculin Blue','Basculin White',
-  'Deerling Summer','Deerling Autumn','Deerling Winter',
-  'Sawsbuck Summer','Sawsbuck Autumn','Sawsbuck Winter',
+  'Deerling','Sawsbuck',
   'Gimmighoul Roaming','Aegislash Blade',
   'Ogerpon Wellspring','Ogerpon Hearthflame','Ogerpon Cornerstone',
   'Eiscue No Ice','Morpeko Hangry','Darmanitan Zen',
@@ -2772,9 +2771,12 @@ function classifyBDEntry(name, slug) {
   // Returns array of categories (inclusive — gmax is also national)
   if (name.includes('(Gigantamax)')) return ['national', 'gmax'];
   if (/-(alolan|galarian|hisuian|paldean|hisui)/.test(slug)) return ['forms'];
+  // Unown letter forms must precede gender check — unown-f is letter F, not female
+  if (slug.startsWith('unown-')) return ['forms'];
+  // Dimorphic species where M and F are full forms, not just sprite gender differences
+  if (/^(meowstic|indeedee|basculegion|oinkologne)/.test(slug)) return ['forms'];
   if (slug.endsWith('-f')) return ['gender'];
   for (const p of _BKD_OTHER_PATTERNS) { if (name.includes(p)) return ['forms']; }
-  if (/^Unown [^A]/.test(name) || slug.startsWith('unown-')) return ['forms'];
   if (_BKD_OTHER_SLUG.test(slug)) return ['forms'];
   return ['national'];
 }
