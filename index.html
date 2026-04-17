@@ -284,14 +284,16 @@
 /* ===== Page Navigation ===== */
 .page { display: none; }
 .page.active { display: block; min-height: 100vh; }
-/* Dex pages: fixed-height flex so top-bar is anchored and .main scrolls */
-.page.active:not(#page-landing) {
-  display: flex; flex-direction: column;
-  height: 100vh; height: 100dvh; /* dvh accounts for iOS dynamic toolbar */
-  overflow: hidden;
+/* Touch/mobile only: anchor top-bar, let .main scroll independently */
+@media (pointer: coarse) {
+  .page.active:not(#page-landing) {
+    display: flex; flex-direction: column;
+    height: 100vh; height: 100dvh;
+    overflow: hidden;
+  }
+  .top-bar { flex-shrink: 0; }
+  .main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; padding: 4px; max-width: none; margin: 0; }
 }
-.top-bar { flex-shrink: 0; }
-.main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; min-height: 0; }
 
 /* Landing */
 .landing-header { padding: 24px 16px 12px; text-align: center; background: #fff; position: relative; }
