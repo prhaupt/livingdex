@@ -2782,8 +2782,12 @@ const PAGE_THEME = {
   lza:     '#e2f8f0',
 };
 function setThemeColor(id) {
+  const color = PAGE_THEME[id] || '#ffffff';
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.content = PAGE_THEME[id] || '#ffffff';
+  if (meta) meta.content = color;
+  // Also set html background — iOS uses this to fill the safe-area
+  // inset behind the Dynamic Island when the meta tag alone is unreliable
+  document.documentElement.style.background = color;
 }
 
 function closeDex() {
