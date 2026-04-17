@@ -1935,7 +1935,10 @@ function getImgSrc(slug) {
   };
   if (specialUrls[slug]) return specialUrls[slug];
   if (slug === 'unown' || slug.startsWith('unown-')) {
-    const unownSlug = slug === 'unown' ? 'unown-a' : slug;
+    const unownSlug = slug === 'unown' ? 'unown-a'
+      : slug === 'unown-exclamation' ? 'unown-em'
+      : slug === 'unown-question'    ? 'unown-qm'
+      : slug;
     return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/' + unownSlug + '.png';
   }
   return BASE + slug + '.png';
@@ -2726,7 +2729,10 @@ function getImgSrc(slug) {
   };
   if (specialUrls[slug]) return specialUrls[slug];
   if (slug === 'unown' || slug.startsWith('unown-')) {
-    const unownSlug = slug === 'unown' ? 'unown-a' : slug;
+    const unownSlug = slug === 'unown' ? 'unown-a'
+      : slug === 'unown-exclamation' ? 'unown-em'
+      : slug === 'unown-question'    ? 'unown-qm'
+      : slug;
     return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/' + unownSlug + '.png';
   }
   return BASE + slug + '.png';
@@ -2799,7 +2805,6 @@ function makeCell(name, slug, isCaught, onClickFn, cellId) {
 
 // ── SHINY DEX helpers ─────────────────────────────────────────────────────
 function getShinyImgSrc(slug) {
-  const BDSP_SH = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/';
   const specialShiny = {
     'meowstic-m':       'https://img.pokemondb.net/sprites/home/shiny/meowstic-male.png',
     'meowstic-f':       'https://img.pokemondb.net/sprites/home/shiny/meowstic-female.png',
@@ -2808,9 +2813,9 @@ function getShinyImgSrc(slug) {
     'oinkologne-f':     'https://img.pokemondb.net/sprites/home/shiny/oinkologne-female.png',
     'basculegion-f':    'https://img.pokemondb.net/sprites/home/shiny/basculegion-female.png',
     'floette-eternal':  'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/shiny/floette-eternal.png',
-    // ! and ? use different filenames on pokemondb; try BDSP shiny, fall back in onerror
-    'unown-exclamation': BDSP_SH + 'unown-em.png',
-    'unown-question':    BDSP_SH + 'unown-qm.png',
+    // pokemondb uses unown-em / unown-qm as the filename for ! and ?
+    'unown-exclamation': BASE_SHINY + 'unown-em.png',
+    'unown-question':    BASE_SHINY + 'unown-qm.png',
   };
   if (specialShiny[slug]) return specialShiny[slug];
   return BASE_SHINY + slug + '.png';
