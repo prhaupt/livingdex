@@ -3026,41 +3026,20 @@ const _SYNC_THROTTLE = 30000; // ms — minimum gap between auto-syncs
 
 function initSupabase() {
   if (typeof supabase === 'undefined') { console.warn('Supabase not loaded'); return; }
-  const SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
-  _sb = supabase.createClient(SB_URL, SB_KEY, { auth: { flowType: 'implicit', detectSessionInUrl: true } });
+  _sb = supabase.createClient(_SB_URL, _SB_KEY);
 
-  // onAuthStateChange handles all auth events
+  // onAuthStateChange handles magic-link sign-in (fires on redirect)
   _sb.auth.onAuthStateChange(async (event, session) => {
     const wasSignedIn = !!_sbUser;
     _sbUser = session?.user ?? null;
     updateSyncUI();
     if (event === 'SIGNED_IN' && _sbUser && !wasSignedIn) {
       closeSyncModal();
-      // Clean the hash from the URL after sign-in
-      if (window.location.hash.includes('access_token')) {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
       await syncFromSupabase();
     }
   });
 
-  // If page loaded with magic link hash, explicitly set the session
-  const hash = window.location.hash;
-  if (hash.includes('access_token=')) {
-    const params = new URLSearchParams(hash.slice(1));
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-    if (accessToken && refreshToken) {
-      _sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
-        .then(({ data, error }) => {
-          if (error) console.error('setSession error:', error);
-        });
-      return; // onAuthStateChange will fire and handle the rest
-    }
-  }
-
-  // Otherwise restore any existing session from storage
+  // getSession restores an existing session on page load
   _sb.auth.getSession().then(({ data: { session } }) => {
     _sbUser = session?.user ?? null;
     updateSyncUI();
@@ -3151,31 +3130,16 @@ function showSyncError(msg) {
 }
 
 async function sbSignIn(email) {
-  const SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
-  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — check your connection')), 10000));
+  if (!_sb) return 'Sync not available';
   try {
-    const fetchP = fetch(SB_URL + '/auth/v1/otp?redirect_to=' + encodeURIComponent('https://prhaupt.github.io/livingdex/'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + SB_KEY
-      },
-      body: JSON.stringify({
-        email,
-        create_user: true
-      })
-    }).then(async r => {
-      if (!r.ok) {
-        const body = await r.json().catch(() => ({}));
-        throw new Error(body.msg || body.message || body.error_description || 'Error ' + r.status);
-      }
+    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — try again')), 15000));
+    const otpP = _sb.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: 'https://prhaupt.github.io/livingdex/' }
     });
-    await Promise.race([fetchP, timeout]);
-    return null;
+    const { error } = await Promise.race([otpP, timeout]);
+    return error?.message ?? null;
   } catch (e) {
-    console.error('sbSignIn error:', e);
     return e.message;
   }
 }
