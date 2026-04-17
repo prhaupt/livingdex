@@ -634,15 +634,6 @@ body.di-sv::before     { background: #fcd8d4; }
 body.di-lza::before    { background: #e2f8f0; }
 
 /* ── Import/Export UI ─────────────────────────────────────────────── */
-#ie-btn {
-  position: fixed; bottom: 24px; right: 24px;
-  width: 48px; height: 48px; border-radius: 50%;
-  background: #1D9E75; color: #fff; font-size: 22px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-  z-index: 200; border: none; user-select: none;
-}
-#ie-btn:hover { background: #178a64; }
 #ie-modal {
   position: fixed; inset: 0; background: rgba(0,0,0,0.45);
   display: none; align-items: center; justify-content: center; z-index: 1000;
@@ -948,6 +939,9 @@ body.di-lza::before    { background: #e2f8f0; }
         <div class="tile-count" id="tile-count-frlg">0 / 151</div>
       </div>
     </div>
+  </div>
+  <div class="landing-footer">
+    <button class="footer-btn" onclick="document.getElementById('ie-modal').style.display='flex'">⇅ Import / Export</button>
   </div>
   <div class="app-version" id="app-version"></div>
 </div>
@@ -3223,14 +3217,13 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <!-- Import/Export -->
-<div id="ie-btn" onclick="document.getElementById('ie-modal').style.display='flex'" title="Import / Export data">⇅</div>
 <div id="ie-modal" onclick="if(event.target===this)this.style.display='none'">
   <div id="ie-card">
     <h2>Import / Export</h2>
     <p>Save your catch data to a file, or load a previously saved file.</p>
     <div class="ie-btns">
       <button class="ie-primary" onclick="exportData()">⬇ Export JSON</button>
-      <label class="ie-primary" style="cursor:pointer">⬆ Import JSON<input type="file" accept=".json" style="display:none" onchange="importData(this.files[0])"></label>
+      <button class="ie-primary" onclick="importData()">⬆ Import JSON</button>
     </div>
     <button class="ie-secondary" onclick="document.getElementById('ie-modal').style.display='none'">Close</button>
   </div>
