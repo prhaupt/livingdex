@@ -2799,14 +2799,18 @@ function makeCell(name, slug, isCaught, onClickFn, cellId) {
 
 // ── SHINY DEX helpers ─────────────────────────────────────────────────────
 function getShinyImgSrc(slug) {
+  const BDSP_SH = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/';
   const specialShiny = {
-    'meowstic-m':    'https://img.pokemondb.net/sprites/home/shiny/meowstic-male.png',
-    'meowstic-f':    'https://img.pokemondb.net/sprites/home/shiny/meowstic-female.png',
-    'indeedee-m':    'https://img.pokemondb.net/sprites/home/shiny/indeedee-male.png',
-    'indeedee-f':    'https://img.pokemondb.net/sprites/home/shiny/indeedee-female.png',
-    'oinkologne-f':  'https://img.pokemondb.net/sprites/home/shiny/oinkologne-female.png',
-    'basculegion-f': 'https://img.pokemondb.net/sprites/home/shiny/basculegion-female.png',
-    'floette-eternal': 'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/shiny/floette-eternal.png',
+    'meowstic-m':       'https://img.pokemondb.net/sprites/home/shiny/meowstic-male.png',
+    'meowstic-f':       'https://img.pokemondb.net/sprites/home/shiny/meowstic-female.png',
+    'indeedee-m':       'https://img.pokemondb.net/sprites/home/shiny/indeedee-male.png',
+    'indeedee-f':       'https://img.pokemondb.net/sprites/home/shiny/indeedee-female.png',
+    'oinkologne-f':     'https://img.pokemondb.net/sprites/home/shiny/oinkologne-female.png',
+    'basculegion-f':    'https://img.pokemondb.net/sprites/home/shiny/basculegion-female.png',
+    'floette-eternal':  'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/shiny/floette-eternal.png',
+    // ! and ? use different filenames on pokemondb; try BDSP shiny, fall back in onerror
+    'unown-exclamation': BDSP_SH + 'unown-em.png',
+    'unown-question':    BDSP_SH + 'unown-qm.png',
   };
   if (specialShiny[slug]) return specialShiny[slug];
   return BASE_SHINY + slug + '.png';
@@ -2844,10 +2848,10 @@ function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
   img.className = isCaught ? '' : 'grey';
   img.addEventListener('contextmenu', e => e.preventDefault());
   img.onerror = function() {
-    const BDSP_SH = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/';
-    // ! and ? Unown use different filenames on pokemondb
-    if (slug === 'unown-exclamation') { this.src = BDSP_SH + 'unown-em.png'; this.onerror = null; return; }
-    if (slug === 'unown-question')    { this.src = BDSP_SH + 'unown-qm.png'; this.onerror = null; return; }
+    const BDSP_NR = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/';
+    // If BDSP shiny unown-em/qm also 404s, fall back to BDSP normal (confirmed working)
+    if (slug === 'unown-exclamation') { this.src = BDSP_NR + 'unown-em.png'; this.onerror = null; return; }
+    if (slug === 'unown-question')    { this.src = BDSP_NR + 'unown-qm.png'; this.onerror = null; return; }
     const fallbackMap = {
       'darmanitan-galarian-standard': 'darmanitan-galarian',
       'squawkabilly-green': 'squawkabilly', 'squawkabilly-blue': 'squawkabilly',
