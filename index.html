@@ -3041,16 +3041,32 @@ function initSupabase() {
     }
   });
 
-  // Handle magic link landing: hash has access_token from implicit flow
+  // Handle magic link landing
   const hash = window.location.hash;
+  const search = window.location.search;
+
+  // Show debug banner so we can see what arrived in the URL
+  const _dbg = document.createElement('div');
+  _dbg.id = 'auth-debug';
+  _dbg.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;z-index:9999;word-break:break-all';
+  _dbg.textContent = 'hash: ' + (hash.slice(0,60)||'(none)') + ' | search: ' + (search.slice(0,60)||'(none)');
+  document.body.appendChild(_dbg);
+  setTimeout(() => _dbg.remove(), 20000);
+
   if (hash.includes('access_token=')) {
     const params = new URLSearchParams(hash.slice(1));
     const access_token  = params.get('access_token');
     const refresh_token = params.get('refresh_token');
     if (access_token && refresh_token) {
-      _sb.auth.setSession({ access_token, refresh_token });
-      return; // onAuthStateChange fires → updateSyncUI
+      _sb.auth.setSession({ access_token, refresh_token }).then(({ data, error }) => {
+        _dbg.textContent = error ? 'setSession error: ' + error.message : 'setSession OK — user: ' + data?.session?.user?.email;
+      });
+      return;
     }
+  }
+
+  if (search.includes('code=')) {
+    _dbg.textContent = 'PKCE code detected in URL — cannot exchange without challenge';
   }
 
   // Normal page load: restore existing session from storage
