@@ -3026,7 +3026,7 @@ const _SYNC_THROTTLE = 30000; // ms — minimum gap between auto-syncs
 
 function initSupabase() {
   if (typeof supabase === 'undefined') { console.warn('Supabase not loaded'); return; }
-  _sb = supabase.createClient(_SB_URL, _SB_KEY);
+  _sb = supabase.createClient(_SB_URL, _SB_KEY, { auth: { flowType: 'implicit' } });
 
   // onAuthStateChange handles magic-link sign-in (fires on redirect)
   _sb.auth.onAuthStateChange(async (event, session) => {
