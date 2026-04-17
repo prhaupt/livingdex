@@ -2794,10 +2794,8 @@ function setThemeColor(id) {
   const color = PAGE_THEME[id] || '#ffffff';
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.content = color;
-  document.documentElement.style.background = color;
-  document.body.style.background = color;
-  // Fixed overlay that paints exactly the safe-area-inset-top region — the most
-  // reliable way to colour the Dynamic Island / notch on all dex pages.
+  // Fixed overlay covers exactly env(safe-area-inset-top) — paints the Dynamic
+  // Island / notch region with the dex theme colour without touching page backgrounds.
   const saFill = document.getElementById('safe-area-fill');
   if (saFill) saFill.style.background = color;
 }
