@@ -2418,6 +2418,50 @@ const DEXES = {
 
 // ── Per-dex caught state (in memory) ─────────────────────────
 const _caughtCache = {};
+
+// ── Incremental stats cache ───────────────────────────────────
+// Populated by updateTileCounts / updateDexStats (full scans).
+// toggleCaught does O(1) +1/-1 updates instead of rescanning.
+let _statsTotals = {}; // dexId -> { caught, total }
+let _bkdTimer = null;
+function _scheduleBkdUpdate(dexId) {
+  clearTimeout(_bkdTimer);
+  _bkdTimer = setTimeout(() => {
+    if (dexId === 'dex')   updateDexBreakdown();
+    if (dexId === 'shiny') updateShinyBreakdown();
+  }, 250);
+}
+function _pushStatsDOM(dexId) {
+  const st = _statsTotals[dexId];
+  if (!st) return;
+  const pct = st.total > 0 ? Math.round(st.caught / st.total * 100) : 0;
+  const ids = DEXES[dexId].statsIds;
+  if (!ids) return;
+  const cc = document.getElementById(ids.cc);
+  const tc = document.getElementById(ids.tc);
+  const p  = document.getElementById(ids.pct);
+  const m  = document.getElementById(ids.mbar);
+  if (cc) cc.textContent = st.caught;
+  if (tc) tc.textContent = st.total;
+  if (p)  p.textContent  = pct + '%';
+  if (m)  m.style.width  = pct + '%';
+}
+function _pushTileDOM(dexId) {
+  const cfg = DEXES[dexId];
+  if (!cfg?.tileIds?.fill) return;
+  const fill = document.getElementById(cfg.tileIds.fill);
+  if (!fill) return;
+  const st = _statsTotals[dexId];
+  if (!st) return;
+  const pct = st.total > 0 ? Math.round(st.caught / st.total * 100) : 0;
+  fill.style.width = pct + '%';
+  const pctEl = document.getElementById(cfg.tileIds.pct);
+  const cntEl = document.getElementById(cfg.tileIds.count);
+  if (pctEl) pctEl.textContent = pct + '%';
+  if (cntEl) cntEl.textContent = st.caught + ' / ' + st.total;
+  const tile = fill.closest('.dex-tile');
+  if (tile) tile.classList.toggle('tile-complete', pct === 100 && st.total > 0);
+}
 function getCaught(dexId) {
   if (!_caughtCache[dexId]) {
     _caughtCache[dexId] = JSON.parse(localStorage.getItem(DEXES[dexId].key) || '{}');
@@ -2561,17 +2605,14 @@ function toggleCaught(dexId, boxN, name, slug) {
   const caught = getCaught(dexId);
   const id = getCellId(dexId, boxN, name, slug);
   if (caught[id]) delete caught[id]; else caught[id] = 1;
+  const isCaught = !!caught[id];
   saveCaught(dexId);
-  sbToggle(dexId, id, !!caught[id]);
+  sbToggle(dexId, id, isCaught);
 
-  // ── Immediate visual update — must happen before any heavy work so the
-  //    browser can commit the paint frame and the cellPop animation plays.
-  // CSS.escape handles IDs with parentheses/spaces (e.g. "sw1_Rillaboom (Gigantamax)")
+  // ── Immediate visual update ───────────────────────────────────
   const _con = document.getElementById(DEXES[dexId].containerId);
   const cell = _con ? _con.querySelector('#' + CSS.escape(id)) : document.getElementById(id);
   if (cell) {
-    const isCaught = !!caught[id];
-    // Restart animation even if popping class is already present (rapid clicks)
     cell.classList.remove('popping');
     cell.className = 'cell' + (isCaught ? ' caught' : '') + ' popping';
     cell.addEventListener('animationend', () => cell.classList.remove('popping'), { once: true });
@@ -2583,11 +2624,20 @@ function toggleCaught(dexId, boxN, name, slug) {
 
   updateBoxHdr(dexId, boxN);
 
-  // ── Defer heavy stat recounts to the next animation frame so the pop
-  //    animation's opening frame is painted before the main thread is busy.
+  // ── Incremental stats update — O(1), no scanning ─────────────
+  // Only entries that pass the lockFn (or all entries when no lockFn) count.
+  const lockFn = DEXES[dexId].lockFn || null;
+  if (!lockFn || !lockFn(name, slug)) {
+    if (_statsTotals[dexId]) {
+      _statsTotals[dexId].caught += isCaught ? 1 : -1;
+    }
+  }
+
+  // ── Deferred DOM flush — just cache reads + a handful of DOM writes ──
   requestAnimationFrame(() => {
-    updateDexStats(dexId);
-    updateTileCounts();
+    _pushStatsDOM(dexId);
+    _pushTileDOM(dexId);
+    _scheduleBkdUpdate(dexId);
   });
 }
 
@@ -2623,6 +2673,7 @@ function updateDexStats(dexId) {
     return s + cp.filter(([name, slug]) => !!caught[getCellId(dexId, b.n, name, slug)]).length;
   }, 0);
   const pct = total > 0 ? Math.round(caughtCount/total*100) : 0;
+  _statsTotals[dexId] = { caught: caughtCount, total }; // keep cache fresh
   const ids = cfg.statsIds;
   const cc = document.getElementById(ids.cc);
   const tc = document.getElementById(ids.tc);
@@ -2655,6 +2706,7 @@ function updateTileCounts() {
       return s + cp.filter(([name, slug]) => !!caught[getCellId(dexId, b.n, name, slug)]).length;
     }, 0);
     const pct = total > 0 ? Math.round(caughtCount/total*100) : 0;
+    _statsTotals[dexId] = { caught: caughtCount, total }; // keep cache fresh
     fill.style.width = pct + '%';
     const pctEl = document.getElementById(cfg.tileIds.pct);
     const cntEl = document.getElementById(cfg.tileIds.count);
