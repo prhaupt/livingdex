@@ -649,13 +649,13 @@
 /* Caught / Outstanding filter row inside breakdown strip */
 .bkd-filter-row { width:100%; display:flex; gap:6px; padding-top:2px; }
 .bkd-filter-btn {
-  flex:1; background:rgba(255,255,255,0.5); border:2px solid transparent;
-  border-radius:8px; padding:5px 8px; font-size:11px; font-weight:600;
-  cursor:pointer; color:#888; transition:background 0.15s,border-color 0.15s,color 0.15s;
+  flex:1; background:none; border:1px solid rgba(0,0,0,0.12);
+  border-radius:6px; padding:3px 6px; font-size:10px; font-weight:500;
+  cursor:pointer; color:#aaa; transition:border-color 0.15s,color 0.15s;
   text-align:center;
 }
-.bkd-filter-btn:hover { background:rgba(255,255,255,0.8); color:#555; }
-.bkd-filter-btn.active { border-color:#1a7a5e; background:rgba(255,255,255,0.85); color:#1a7a5e; }
+.bkd-filter-btn:hover { color:#666; border-color:rgba(0,0,0,0.25); }
+.bkd-filter-btn.active { border-color:#1a7a5e; color:#1a7a5e; }
 #page-shiny .bkd-filter-btn.active { border-color:#a060e0; color:#a060e0; }
 .bkd-chip { flex:1; min-width:0; background:rgba(255,255,255,0.62); border-radius:10px; padding:8px 10px 7px; cursor:pointer; border:2px solid transparent; transition:border-color .15s, background .15s; }
 .bkd-chip:hover { background:rgba(255,255,255,0.85); }
@@ -1000,8 +1000,8 @@
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gmax" style="width:0%"></div></div>
       </div>
       <div class="bkd-filter-row">
-        <button class="bkd-filter-btn" id="fm-cat-dex" onclick="toggleFmFilter('dex','cat',this)">✓ Caught</button>
-        <button class="bkd-filter-btn" id="fm-unc-dex" onclick="toggleFmFilter('dex','unc',this)">◌ Outstanding</button>
+        <button class="bkd-filter-btn" id="fm-cat-dex" onclick="toggleFmFilter('dex','cat',this)">Caught</button>
+        <button class="bkd-filter-btn" id="fm-unc-dex" onclick="toggleFmFilter('dex','unc',this)">Outstanding</button>
       </div>
     </div>
     <div class="controls">
@@ -3451,8 +3451,8 @@ if ('serviceWorker' in navigator) {
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gmax" style="width:0%"></div></div>
       </div>
       <div class="bkd-filter-row">
-        <button class="bkd-filter-btn" id="fm-cat-shiny" onclick="toggleFmFilter('shiny','cat',this)">✓ Caught</button>
-        <button class="bkd-filter-btn" id="fm-unc-shiny" onclick="toggleFmFilter('shiny','unc',this)">◌ Outstanding</button>
+        <button class="bkd-filter-btn" id="fm-cat-shiny" onclick="toggleFmFilter('shiny','cat',this)">Caught</button>
+        <button class="bkd-filter-btn" id="fm-unc-shiny" onclick="toggleFmFilter('shiny','unc',this)">Outstanding</button>
       </div>
     </div>
     <div class="controls">
