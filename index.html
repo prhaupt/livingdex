@@ -498,7 +498,7 @@
 
 /* ── Sync button ─────────────────────────────────────────────── */
 #sync-btn {
-  position: absolute; top: 14px; right: 14px;
+  position: absolute; top: 22px; right: 14px;
   display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1);
   border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 500;
@@ -2951,6 +2951,21 @@ updateTileCounts();
 (function() {
   const el = document.getElementById('app-version');
   if (el) el.textContent = APP_VERSION;
+})();
+
+// Inject sync dot into every dex stats-row that doesn't already have one
+(function() {
+  document.querySelectorAll('.stats-row').forEach(row => {
+    if (row.querySelector('.sync-top-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'sync-top-btn';
+    btn.title = 'Sync progress';
+    btn.onclick = openSyncModal;
+    btn.innerHTML = '<span class="sync-dot-el"></span>';
+    const expand = row.querySelector('.bkd-expand');
+    expand ? row.insertBefore(btn, expand) : row.appendChild(btn);
+  });
+  updateSyncUI(); // apply current dot status to newly injected dots
 })();
 
 // ── SUPABASE SYNC ────────────────────────────────────────────────────────────
