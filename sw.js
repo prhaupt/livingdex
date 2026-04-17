@@ -1,19 +1,18 @@
-const CACHE = 'livingdex-v1';
-const ASSETS = [
-  './index.html',
+const CACHE = 'livingdex-v3';
+const STATIC = [
   './manifest.json',
   './icon.png',
 ];
 
-// Install — cache core assets
+// Install — pre-cache static assets (not index.html)
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE).then(cache => cache.addAll(STATIC))
   );
   self.skipWaiting();
 });
 
-// Activate — clean up old caches
+// Activate — delete all old caches immediately
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -23,18 +22,34 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch — serve from cache, fall back to network
-// External requests (PokeAPI sprites etc.) always go to network
+// Fetch strategy:
+//   index.html  → network-first (always try fresh, fall back to cache offline)
+//   other local → cache-first (icon, manifest — rarely change)
+//   external    → network-only with cache fallback (sprites, APIs)
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Always fetch external APIs/sprites fresh from network
-  if (!url.origin.includes(self.location.origin)) {
+  // External requests: always network, cache as fallback
+  if (url.origin !== self.location.origin) {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
 
-  // For local assets: cache-first
+  // index.html: network-first so updates are picked up immediately
+  if (url.pathname.endsWith('/') || url.pathname.endsWith('index.html')) {
+    e.respondWith(
+      fetch(e.request)
+        .then(response => {
+          const clone = response.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Static assets: cache-first
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
