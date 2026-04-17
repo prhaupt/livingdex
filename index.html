@@ -3026,7 +3026,10 @@ const _SYNC_THROTTLE = 30000; // ms — minimum gap between auto-syncs
 
 function initSupabase() {
   if (typeof supabase === 'undefined') { console.warn('Supabase not loaded'); return; }
-  _sb = supabase.createClient(_SB_URL, _SB_KEY, { auth: { flowType: 'implicit' } });
+  const SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
+  console.log('initSupabase: creating client, hash=', window.location.hash.slice(0, 40));
+  _sb = supabase.createClient(SB_URL, SB_KEY, { auth: { flowType: 'implicit' } });
 
   // onAuthStateChange handles magic-link sign-in (fires on redirect)
   _sb.auth.onAuthStateChange(async (event, session) => {
