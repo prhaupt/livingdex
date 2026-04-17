@@ -1,6 +1,6 @@
 # LivingHome
 
-A Pokémon living dex tracker — installable as a PWA, works offline, and syncs across devices via optional cloud sign-in. Built as a single HTML file with no framework dependencies.
+A Pokémon living dex tracker — installable as a PWA, works offline, with import/export for backing up and transferring data. Built as a single HTML file with no framework dependencies.
 
 🔗 **Live at:** https://prhaupt.github.io/livingdex/
 
@@ -37,8 +37,12 @@ Tap the ⓘ on any Pokémon (or long-press on mobile) to open a detail panel sho
 - Where to find it across modern games
 - Direct link to PokémonDB
 
-### Cloud Sync
-Sign in with your email (magic link — no password needed) to sync your progress across devices via Supabase. Catches sync automatically when you open or close a dex, with a status indicator in the header.
+### Import / Export
+Tap the **⇅** button fixed to the bottom-right corner to open the Import/Export panel:
+- **Export JSON** — downloads all catch data as a timestamped `.json` file
+- **Import JSON** — load a previously exported file to restore or transfer your progress
+
+To move data between devices, export on one and import on the other (AirDrop works well on Apple devices).
 
 ### Other
 - **Search** — filter by Pokémon name within any dex
@@ -50,7 +54,7 @@ Sign in with your email (magic link — no password needed) to sync your progres
 
 ## Usage
 
-Open the URL in any browser. Tap or click a Pokémon to mark it as caught. Data is saved to your browser's localStorage automatically — no account required. Optionally sign in with your email to enable cross-device sync.
+Open the URL in any browser. Tap or click a Pokémon to mark it as caught. Data is saved to your browser's localStorage automatically — no account required. Use the **⇅** button to export a backup or import data onto a new device.
 
 ---
 
@@ -60,11 +64,10 @@ Everything lives in a single self-contained `index.html` with no build step and 
 
 - **PokémonDB** sprite CDN — for Pokémon images (normal and shiny)
 - **PokeAPI** — evolution chain data, fetched on demand when the info panel opens
-- **Supabase** — optional cloud sync (email magic link auth, `catches` table with RLS)
 
 The PWA service worker caches the HTML for offline use. Sprites and evolution data are not cached (to keep storage usage low).
 
-Local data is stored in `localStorage` per dex. Cloud sync performs a union merge — catches present on either side are kept, nothing is deleted from the other device.
+Local data is stored in `localStorage` per dex (`caught_<dexId>` keys). The export collects all `caught_*` keys into a single JSON file; import reads them back and reloads the page.
 
 ---
 
