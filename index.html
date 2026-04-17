@@ -3134,7 +3134,7 @@ async function sbSignIn(email) {
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
   const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — check your connection')), 10000));
   try {
-    const fetchP = fetch(SB_URL + '/auth/v1/otp', {
+    const fetchP = fetch(SB_URL + '/auth/v1/otp?redirect_to=' + encodeURIComponent('https://prhaupt.github.io/livingdex/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -3143,8 +3143,7 @@ async function sbSignIn(email) {
       },
       body: JSON.stringify({
         email,
-        create_user: true,
-        options: { emailRedirectTo: 'https://prhaupt.github.io/livingdex/' }
+        create_user: true
       })
     }).then(async r => {
       if (!r.ok) {
