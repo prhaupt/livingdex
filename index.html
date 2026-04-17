@@ -2567,12 +2567,15 @@ function toggleCaught(dexId, boxN, name, slug) {
   saveCaught(dexId);
   sbToggle(dexId, id, !!caught[id]);
 
-  // Scope lookup to dex container to avoid cross-dex ID collisions (dex + shiny share slug IDs)
-  // CSS.escape handles IDs with spaces/parentheses (e.g. "sw1_Rillaboom (Gigantamax)")
+  // ── Immediate visual update — must happen before any heavy work so the
+  //    browser can commit the paint frame and the cellPop animation plays.
+  // CSS.escape handles IDs with parentheses/spaces (e.g. "sw1_Rillaboom (Gigantamax)")
   const _con = document.getElementById(DEXES[dexId].containerId);
   const cell = _con ? _con.querySelector('#' + CSS.escape(id)) : document.getElementById(id);
   if (cell) {
     const isCaught = !!caught[id];
+    // Restart animation even if popping class is already present (rapid clicks)
+    cell.classList.remove('popping');
     cell.className = 'cell' + (isCaught ? ' caught' : '') + ' popping';
     cell.addEventListener('animationend', () => cell.classList.remove('popping'), { once: true });
     const img = cell.querySelector('img');
@@ -2582,8 +2585,13 @@ function toggleCaught(dexId, boxN, name, slug) {
   }
 
   updateBoxHdr(dexId, boxN);
-  updateDexStats(dexId);
-  updateTileCounts();
+
+  // ── Defer heavy stat recounts to the next animation frame so the pop
+  //    animation's opening frame is painted before the main thread is busy.
+  requestAnimationFrame(() => {
+    updateDexStats(dexId);
+    updateTileCounts();
+  });
 }
 
 // ── UPDATE BOX HEADER ─────────────────────────────────────────
