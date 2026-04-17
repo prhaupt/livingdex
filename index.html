@@ -287,7 +287,7 @@
 .page.active { display: block; }
 
 /* Landing */
-.landing-header { padding: 24px 16px 12px; text-align: center; background: #fff; }
+.landing-header { padding: 24px 16px 12px; text-align: center; background: #fff; position: relative; }
 .landing-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 3px; }
 .landing-sub { font-size: 12px; color: #999; margin: 0; }
 
@@ -498,6 +498,7 @@
 
 /* ── Sync button ─────────────────────────────────────────────── */
 #sync-btn {
+  position: absolute; top: 14px; right: 14px;
   display: flex; align-items: center; gap: 6px;
   background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1);
   border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 500;
@@ -684,6 +685,10 @@
   <div class="landing-header">
     <h1 class="landing-title"><img src="icon.png" alt="" width="28" height="28" style="border-radius:7px;vertical-align:middle;margin-right:7px;margin-bottom:2px;">LivingHome</h1>
     <p class="landing-sub">Pokémon collection tracker</p>
+    <button id="sync-btn" onclick="openSyncModal()">
+      <span id="sync-dot" class="sync-dot-el"></span>
+      <span id="sync-label">☁ Sign in to sync</span>
+    </button>
   </div>
   <div class="tile-grid">
     <!-- 1. HOME -->
@@ -944,12 +949,6 @@
         <div class="tile-count" id="tile-count-frlg">0 / 151</div>
       </div>
     </div>
-  </div>
-  <div class="landing-footer">
-    <button id="sync-btn" onclick="openSyncModal()">
-      <span id="sync-dot" class="sync-dot-el"></span>
-      <span id="sync-label">☁ Sign in to sync</span>
-    </button>
   </div>
   <div class="app-version" id="app-version"></div>
 </div>
