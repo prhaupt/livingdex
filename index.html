@@ -3026,20 +3026,34 @@ const _SYNC_THROTTLE = 30000; // ms — minimum gap between auto-syncs
 
 function initSupabase() {
   if (typeof supabase === 'undefined') { console.warn('Supabase not loaded'); return; }
-  _sb = supabase.createClient(_SB_URL, _SB_KEY);
+  _sb = supabase.createClient(_SB_URL, _SB_KEY, { auth: { flowType: 'implicit' } });
 
-  // onAuthStateChange handles magic-link sign-in (fires on redirect)
   _sb.auth.onAuthStateChange(async (event, session) => {
     const wasSignedIn = !!_sbUser;
     _sbUser = session?.user ?? null;
     updateSyncUI();
     if (event === 'SIGNED_IN' && _sbUser && !wasSignedIn) {
       closeSyncModal();
+      if (window.location.hash.includes('access_token')) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
       await syncFromSupabase();
     }
   });
 
-  // getSession restores an existing session on page load
+  // Handle magic link landing: hash has access_token from implicit flow
+  const hash = window.location.hash;
+  if (hash.includes('access_token=')) {
+    const params = new URLSearchParams(hash.slice(1));
+    const access_token  = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    if (access_token && refresh_token) {
+      _sb.auth.setSession({ access_token, refresh_token });
+      return; // onAuthStateChange fires → updateSyncUI
+    }
+  }
+
+  // Normal page load: restore existing session from storage
   _sb.auth.getSession().then(({ data: { session } }) => {
     _sbUser = session?.user ?? null;
     updateSyncUI();
@@ -3130,15 +3144,23 @@ function showSyncError(msg) {
 }
 
 async function sbSignIn(email) {
-  if (!_sb) return 'Sync not available';
+  // Use raw fetch — avoids SDK header issues that cause the request to hang
+  const SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — try again')), 15000));
   try {
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — try again')), 15000));
-    const otpP = _sb.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: 'https://prhaupt.github.io/livingdex/' }
+    const fetchP = fetch(SB_URL + '/auth/v1/otp?redirect_to=' + encodeURIComponent('https://prhaupt.github.io/livingdex/'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
+      body: JSON.stringify({ email, create_user: true })
+    }).then(async r => {
+      if (!r.ok) {
+        const b = await r.json().catch(() => ({}));
+        throw new Error(b.msg || b.message || b.error_description || 'Error ' + r.status);
+      }
     });
-    const { error } = await Promise.race([otpP, timeout]);
-    return error?.message ?? null;
+    await Promise.race([fetchP, timeout]);
+    return null;
   } catch (e) {
     return e.message;
   }
@@ -3219,7 +3241,7 @@ async function submitSyncEmail() {
 // Load Supabase SDK asynchronously after page load
 window.addEventListener('load', () => {
   const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js';
   s.onload  = initSupabase;
   s.onerror = () => console.warn('Supabase SDK failed to load — offline only');
   document.head.appendChild(s);
