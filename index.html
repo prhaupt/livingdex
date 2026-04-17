@@ -700,6 +700,36 @@
 .cell.shiny-locked{cursor:default;pointer-events:none;background:transparent;border-color:transparent}
 .cell.shiny-locked img{display:none}
 .cell.shiny-locked .pname{display:none}
+
+/* ── Dynamic Island / notch colour fill (CSS-driven, no JS timing issues) ──
+   Each active page paints a fixed pseudo-element exactly env(safe-area-inset-top) tall
+   at z-index 200, matching the 0% colour-stop of that page's top-bar gradient.
+   On devices without a notch/Dynamic Island the env() resolves to 0px → invisible.
+   The JS #safe-area-fill div is kept as a belt-and-suspenders fallback. */
+.page.active::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 200;
+  pointer-events: none;
+  background: #ffffff; /* default / landing */
+}
+#page-dex.active::before    { background: #f0f9e8; }
+#page-shiny.active::before  { background: #c8b8ff; }
+#page-swsh.active::before   { background: #e8f0ff; }
+#page-bw.active::before     { background: #2c2c2c; }
+#page-b2w2.active::before   { background: #060c18; }
+#page-xy.active::before     { background: #1a2848; }
+#page-oras.active::before   { background: #8ab8d8; }
+#page-sm.active::before     { background: #fce8c0; }
+#page-usum.active::before   { background: #1c1008; }
+#page-lgpe.active::before   { background: #f0d840; }
+#page-bdsp.active::before   { background: #cce0f8; }
+#page-la.active::before     { background: #cce8e0; }
+#page-frlg.active::before   { background: #fde8d4; }
+#page-sv.active::before     { background: #fcd8d4; }
+#page-lza.active::before    { background: #e2f8f0; }
 </style>
 </head>
 <body>
