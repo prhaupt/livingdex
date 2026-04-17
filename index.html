@@ -512,61 +512,7 @@
 .app-version { text-align: center; font-size: 11px; color: #bbb; padding-bottom: 20px; letter-spacing: 0.02em; }
 
 /* ── Sync button ─────────────────────────────────────────────── */
-#sync-btn {
-  position: absolute; top: 22px; right: 14px;
-  display: flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 500;
-  color: #555; cursor: pointer; max-width: 200px; overflow: hidden;
-  text-overflow: ellipsis; white-space: nowrap;
-  backdrop-filter: blur(8px); transition: background 0.15s; height: 36px;
-}
-#sync-btn:hover { background: rgba(255,255,255,1); }
-#sync-dot {
-  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  display: none; background: #1a7a5e;
-}
-#sync-dot[data-status="idle"]    { display: inline-block; background: #1a7a5e; }
-#sync-dot[data-status="syncing"] { display: inline-block; background: #f0a500; animation: sbpulse 0.9s infinite; }
-#sync-dot[data-status="synced"]  { display: inline-block; background: #1a7a5e; }
-#sync-dot[data-status="error"]   { display: inline-block; background: #e74c3c; }
-@keyframes sbpulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
 
-/* ── Sync modal ──────────────────────────────────────────────── */
-#sync-modal {
-  display: none; position: fixed; inset: 0; z-index: 1100;
-  background: rgba(0,0,0,0.25); backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  align-items: center; justify-content: center; padding: 24px;
-}
-#sync-card {
-  background: rgba(255,255,255,0.93); backdrop-filter: blur(24px);
-  border-radius: 18px; padding: 28px 24px; width: 100%; max-width: 340px;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.14); border: 1px solid rgba(255,255,255,0.9);
-}
-#sync-card h2 { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
-#sync-card p  { font-size: 13px; color: #666; margin-bottom: 18px; line-height: 1.5; }
-#sync-email {
-  width: 100%; padding: 11px 13px; border: 1px solid rgba(0,0,0,0.15);
-  border-radius: 10px; font-size: 14px; color: #1a1a1a; outline: none;
-  background: rgba(255,255,255,0.9); margin-bottom: 12px;
-  transition: border-color 0.15s;
-}
-#sync-email:focus { border-color: #1a7a5e; }
-.sb-btns { display: flex; gap: 8px; }
-.sb-primary {
-  flex: 1; padding: 11px; background: #1a7a5e; color: #fff; border: none;
-  border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;
-  transition: background 0.15s;
-}
-.sb-primary:hover { background: #158060; }
-.sb-primary:disabled { opacity: 0.6; cursor: default; }
-.sb-secondary {
-  padding: 11px 16px; background: rgba(0,0,0,0.06); color: #555; border: none;
-  border-radius: 10px; font-size: 14px; cursor: pointer; transition: background 0.15s;
-}
-.sb-secondary:hover { background: rgba(0,0,0,0.11); }
-#sync-msg { font-size: 13px; margin-top: 12px; min-height: 18px; line-height: 1.4; }
 
 /* Back button */
 .back-btn {
@@ -608,29 +554,6 @@
 #page-shiny .pbar-wrap{background:rgba(0,0,0,0.08)}
 #page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
 .bkd-strip { display:flex; gap:8px; padding:6px 0 10px; flex-wrap:wrap; }
-/* Compact sync button for dex top-bars */
-.sync-top-btn {
-  background:none; border:none; cursor:pointer;
-  padding:0 4px; display:flex; align-items:center; gap:3px;
-  color:rgba(0,0,0,0.4); font-size:14px; flex-shrink:0;
-  transition:color 0.15s;
-}
-.sync-top-btn:hover { color:rgba(0,0,0,0.75); }
-/* Multi-instance sync dot (used in top-bars and landing footer) */
-.sync-dot-el {
-  width:7px; height:7px; border-radius:50%; flex-shrink:0;
-  display:none; background:#1a7a5e;
-}
-.sync-dot-el[data-status="idle"]    { display:inline-block; background:#1a7a5e; }
-.sync-dot-el[data-status="syncing"] { display:inline-block; background:#f0a500; animation:sbpulse 0.9s infinite; }
-.sync-dot-el[data-status="synced"]  { display:inline-block; background:#1a7a5e; }
-.sync-dot-el[data-status="error"]   { display:inline-block; background:#e74c3c; }
-/* Top-bar dot: always visible — grey when signed out, coloured when active */
-.sync-top-btn .sync-dot-el          { display:inline-block; background:rgba(0,0,0,0.18); }
-.sync-top-btn .sync-dot-el[data-status="idle"]    { background:#1a7a5e; }
-.sync-top-btn .sync-dot-el[data-status="syncing"] { background:#f0a500; }
-.sync-top-btn .sync-dot-el[data-status="synced"]  { background:#1a7a5e; }
-.sync-top-btn .sync-dot-el[data-status="error"]   { background:#e74c3c; }
 .bkd-chip { flex:1; min-width:0; background:rgba(255,255,255,0.62); border-radius:10px; padding:8px 10px 7px; cursor:pointer; border:2px solid transparent; transition:border-color .15s, background .15s; }
 .bkd-chip:hover { background:rgba(255,255,255,0.85); }
 .bkd-chip.active { border-color:#7059B8; background:#fff; }
@@ -709,6 +632,39 @@ body.di-la::before     { background: #cce8e0; }
 body.di-frlg::before   { background: #fde8d4; }
 body.di-sv::before     { background: #fcd8d4; }
 body.di-lza::before    { background: #e2f8f0; }
+
+/* ── Import/Export UI ─────────────────────────────────────────────── */
+#ie-btn {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #1D9E75; color: #fff; font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  z-index: 200; border: none; user-select: none;
+}
+#ie-btn:hover { background: #178a64; }
+#ie-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+}
+#ie-card {
+  background: #fff; border-radius: 18px; padding: 28px 24px 20px;
+  max-width: 320px; width: 90%; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+#ie-card h2 { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+#ie-card p  { font-size: 13px; color: #666; margin-bottom: 18px; line-height: 1.5; }
+.ie-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.ie-primary {
+  display: block; width: 100%; padding: 12px; border-radius: 10px;
+  background: #1D9E75; color: #fff; font-size: 15px; font-weight: 600;
+  border: none; cursor: pointer; text-align: center;
+}
+.ie-primary:hover { background: #178a64; }
+.ie-secondary {
+  display: block; width: 100%; padding: 10px; border-radius: 10px;
+  background: #f0f0f0; color: #555; font-size: 14px;
+  border: none; cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -732,10 +688,6 @@ body.di-lza::before    { background: #e2f8f0; }
   <div class="landing-header">
     <h1 class="landing-title"><img src="icon.png" alt="" width="28" height="28" style="border-radius:7px;vertical-align:middle;margin-right:7px;margin-bottom:2px;">LivingHome</h1>
     <p class="landing-sub">Pokémon collection tracker</p>
-    <button id="sync-btn" onclick="openSyncModal()">
-      <span id="sync-dot" class="sync-dot-el"></span>
-      <span id="sync-label">Sign in to sync</span>
-    </button>
   </div>
   <div class="tile-grid">
     <!-- 1. HOME -->
@@ -1008,7 +960,6 @@ body.di-lza::before    { background: #e2f8f0; }
       <div class="stats-row">
         <div class="pill"><strong id="cc">0</strong> / <strong id="tc">0</strong></div>
         <div class="pill"><strong id="pct">0%</strong></div>
-        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span></button>
         <button class="bkd-expand" id="bkd-expand-dex" onclick="toggleBkdStrip('dex')" title="Category breakdown">▾</button>
       </div>
     </div>
@@ -2561,7 +2512,6 @@ function toggleCaught(dexId, boxN, name, slug) {
   if (caught[id]) delete caught[id]; else caught[id] = 1;
   const isCaught = !!caught[id];
   saveCaught(dexId);
-  sbToggle(dexId, id, isCaught);
 
   // ── Immediate visual update ───────────────────────────────────
   const _con = document.getElementById(DEXES[dexId].containerId);
@@ -2882,7 +2832,6 @@ function closeDex() {
   activePage = 'landing';
   updateTileCounts();
   window.scrollTo(0, 0);
-  if (_sbUser) syncFromSupabase();
 }
 
 
@@ -2986,7 +2935,6 @@ function openDex(id) {
   const mainEl = document.querySelector('#page-' + id + ' .main');
   if (mainEl) mainEl.scrollTop = 0;
   // Sync in background; re-render this dex if cloud had new catches
-  if (_sbUser) syncFromSupabase();
 }
 
 
@@ -3000,268 +2948,8 @@ updateTileCounts();
   if (el) el.textContent = APP_VERSION;
 })();
 
-// Inject sync dot into every dex stats-row that doesn't already have one
-(function() {
-  document.querySelectorAll('.stats-row').forEach(row => {
-    if (row.querySelector('.sync-top-btn')) return;
-    const btn = document.createElement('button');
-    btn.className = 'sync-top-btn';
-    btn.title = 'Sync progress';
-    btn.onclick = openSyncModal;
-    btn.innerHTML = '<span class="sync-dot-el"></span>';
-    const expand = row.querySelector('.bkd-expand');
-    expand ? row.insertBefore(btn, expand) : row.appendChild(btn);
-  });
-  updateSyncUI(); // apply current dot status to newly injected dots
-})();
 
-// ── SUPABASE SYNC ────────────────────────────────────────────────────────────
-const _SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
-const _SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
-let _sb = null;
-let _sbUser = null;
-let _syncing = false;
-let _lastSync = 0;
-const _SYNC_THROTTLE = 30000; // ms — minimum gap between auto-syncs
 
-function initSupabase() {
-  if (typeof supabase === 'undefined') { console.warn('Supabase not loaded'); return; }
-  _sb = supabase.createClient(_SB_URL, _SB_KEY, { auth: { flowType: 'implicit' } });
-
-  _sb.auth.onAuthStateChange(async (event, session) => {
-    const wasSignedIn = !!_sbUser;
-    _sbUser = session?.user ?? null;
-    updateSyncUI();
-    if (event === 'SIGNED_IN' && _sbUser && !wasSignedIn) {
-      closeSyncModal();
-      if (window.location.hash.includes('access_token')) {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
-      await syncFromSupabase();
-    }
-  });
-
-  // Handle magic link landing
-  const hash = window.location.hash;
-  const search = window.location.search;
-
-  // Show debug banner so we can see what arrived in the URL
-  const _dbg = document.createElement('div');
-  _dbg.id = 'auth-debug';
-  _dbg.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;color:#fff;font-size:11px;padding:8px 12px;z-index:9999;word-break:break-all';
-  _dbg.textContent = 'hash: ' + (hash.slice(0,60)||'(none)') + ' | search: ' + (search.slice(0,60)||'(none)');
-  document.body.appendChild(_dbg);
-  setTimeout(() => _dbg.remove(), 20000);
-
-  if (hash.includes('access_token=')) {
-    const params = new URLSearchParams(hash.slice(1));
-    const access_token  = params.get('access_token');
-    const refresh_token = params.get('refresh_token');
-    if (access_token && refresh_token) {
-      _sb.auth.setSession({ access_token, refresh_token }).then(({ data, error }) => {
-        _dbg.textContent = error ? 'setSession error: ' + error.message : 'setSession OK — user: ' + data?.session?.user?.email;
-      });
-      return;
-    }
-  }
-
-  if (search.includes('code=')) {
-    _dbg.textContent = 'PKCE code detected in URL — cannot exchange without challenge';
-  }
-
-  // Normal page load: restore existing session from storage
-  _sb.auth.getSession().then(({ data: { session } }) => {
-    _sbUser = session?.user ?? null;
-    updateSyncUI();
-    if (_sbUser) syncFromSupabase();
-  });
-}
-
-// Pull cloud → local, push local → cloud (union merge)
-async function syncFromSupabase(force = false) {
-  if (!_sb || !_sbUser || _syncing) return;
-  if (!force && Date.now() - _lastSync < _SYNC_THROTTLE) return;
-  _syncing = true;
-  _lastSync = Date.now();
-  setSyncStatus('syncing');
-  try {
-    // 10s timeout so it never hangs indefinitely
-    const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Sync timeout')), 10000));
-    const fetchP = _sb.from('catches').select('dex_id,cell_id');
-    const { data, error } = await Promise.race([fetchP, timeout]);
-    if (error) throw error;
-
-    // Merge cloud into local
-    const changed = new Set();
-    for (const { dex_id, cell_id } of data) {
-      if (!DEXES[dex_id]) continue;
-      const caught = getCaught(dex_id);
-      if (!caught[cell_id]) { caught[cell_id] = 1; changed.add(dex_id); }
-    }
-    for (const dexId of changed) saveCaught(dexId);
-
-    // Push local catches missing from cloud (with explicit user_id)
-    const sbSet = new Set(data.map(r => r.dex_id + '|' + r.cell_id));
-    const toUpsert = [];
-    for (const dexId of Object.keys(DEXES)) {
-      for (const cellId of Object.keys(getCaught(dexId))) {
-        if (!sbSet.has(dexId + '|' + cellId))
-          toUpsert.push({ user_id: _sbUser.id, dex_id: dexId, cell_id: cellId });
-      }
-    }
-    if (toUpsert.length) {
-      for (let i = 0; i < toUpsert.length; i += 500) {
-        const { error: uErr } = await _sb.from('catches').upsert(toUpsert.slice(i, i + 500));
-        if (uErr) throw uErr;
-      }
-    }
-
-    // Always refresh tile counts after sync (catches may have merged)
-    updateTileCounts();
-    // Re-render the open dex if it received new catches
-    if (changed.size && activePage && activePage !== 'landing' && changed.has(activePage)) {
-      renderDex(activePage);
-    }
-    setSyncStatus('synced');
-  } catch (e) {
-    console.error('Sync error:', e);
-    setSyncStatus('error');
-  } finally {
-    _syncing = false;
-  }
-}
-
-// Called after every catch toggle
-async function sbToggle(dexId, cellId, isCaught) {
-  if (!_sb || !_sbUser) return;
-  try {
-    if (isCaught) {
-      const { error } = await _sb.from('catches').upsert({ user_id: _sbUser.id, dex_id: dexId, cell_id: cellId });
-      if (error) throw error;
-    } else {
-      const { error } = await _sb.from('catches').delete().eq('dex_id', dexId).eq('cell_id', cellId);
-      if (error) throw error;
-    }
-    setSyncStatus('synced');
-  } catch (e) {
-    console.error('Toggle sync error:', e);
-    setSyncStatus('error');
-    showSyncError(e.message || JSON.stringify(e));
-  }
-}
-
-function showSyncError(msg) {
-  const label = document.getElementById('sync-label');
-  if (label) {
-    const prev = label.textContent;
-    label.textContent = '⚠ ' + msg;
-    setTimeout(() => { label.textContent = prev; }, 6000);
-  }
-}
-
-async function sbSignIn(email) {
-  // Use raw fetch — avoids SDK header issues that cause the request to hang
-  const SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
-  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
-  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — try again')), 15000));
-  try {
-    const fetchP = fetch(SB_URL + '/auth/v1/otp?redirect_to=' + encodeURIComponent('https://prhaupt.github.io/livingdex/'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY },
-      body: JSON.stringify({ email, create_user: true })
-    }).then(async r => {
-      if (!r.ok) {
-        const b = await r.json().catch(() => ({}));
-        throw new Error(b.msg || b.message || b.error_description || 'Error ' + r.status);
-      }
-    });
-    await Promise.race([fetchP, timeout]);
-    return null;
-  } catch (e) {
-    return e.message;
-  }
-}
-
-async function sbSignOut() {
-  if (!_sb) return;
-  await _sb.auth.signOut();
-  _sbUser = null;
-  updateSyncUI();
-}
-
-let _syncTimer = null;
-function setSyncStatus(s) {
-  const dots = document.querySelectorAll('.sync-dot-el');
-  dots.forEach(d => { d.dataset.status = s; });
-  clearTimeout(_syncTimer);
-  if (s === 'synced') _syncTimer = setTimeout(() => { document.querySelectorAll('.sync-dot-el').forEach(d => { d.dataset.status = 'idle'; }); }, 2000);
-  if (s === 'error')  _syncTimer = setTimeout(() => { document.querySelectorAll('.sync-dot-el').forEach(d => { d.dataset.status = 'idle'; }); }, 8000);
-}
-
-function updateSyncUI() {
-  const dots  = document.querySelectorAll('.sync-dot-el');
-  const label = document.getElementById('sync-label');
-  const login = document.getElementById('sb-login');
-  const acct  = document.getElementById('sb-account');
-  const emailEl = document.getElementById('sb-user-email');
-
-  if (_sbUser) {
-    dots.forEach(d => { d.dataset.status = 'idle'; });
-    if (label) label.textContent = 'Sync';
-    if (login) login.style.display = 'none';
-    if (acct)  acct.style.display  = 'block';
-    if (emailEl) emailEl.textContent = _sbUser.email;
-  } else {
-    dots.forEach(d => { d.dataset.status = ''; d.removeAttribute('data-status'); });
-    if (label) label.textContent = 'Sign in to sync';
-    if (login) login.style.display = 'block';
-    if (acct)  acct.style.display  = 'none';
-  }
-}
-
-function openSyncModal() {
-  document.getElementById('sync-modal').style.display = 'flex';
-  updateSyncUI();
-  if (!_sbUser) setTimeout(() => document.getElementById('sync-email')?.focus(), 80);
-}
-
-function closeSyncModal() {
-  document.getElementById('sync-modal').style.display = 'none';
-  const msg = document.getElementById('sync-msg');
-  if (msg) msg.textContent = '';
-  const inp = document.getElementById('sync-email');
-  if (inp) inp.value = '';
-  const btn = document.getElementById('sb-send-btn');
-  if (btn) btn.disabled = false;
-}
-
-async function submitSyncEmail() {
-  const email = (document.getElementById('sync-email')?.value || '').trim();
-  const msgEl = document.getElementById('sync-msg');
-  const btn   = document.getElementById('sb-send-btn');
-  if (!email) return;
-  if (btn) btn.disabled = true;
-  msgEl.style.color = '#999';
-  msgEl.textContent = 'Sending…';
-  const err = await sbSignIn(email);
-  if (btn) btn.disabled = false;
-  if (err) {
-    msgEl.style.color = '#c0392b';
-    msgEl.textContent = err;
-  } else {
-    msgEl.style.color = '#1a7a5e';
-    msgEl.textContent = '✓ Check your email for a sign-in link!';
-  }
-}
-
-// Load Supabase SDK asynchronously after page load
-window.addEventListener('load', () => {
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.103.3/dist/umd/supabase.min.js';
-  s.onload  = initSupabase;
-  s.onerror = () => console.warn('Supabase SDK failed to load — offline only');
-  document.head.appendChild(s);
-});
 </script>
 <script>
 if ('serviceWorker' in navigator) {
@@ -3499,7 +3187,6 @@ if ('serviceWorker' in navigator) {
       <div class="stats-row">
         <div class="pill"><strong id="shiny-cc">0</strong> / <strong id="shiny-tc">0</strong></div>
         <div class="pill"><strong id="shiny-pct">0%</strong></div>
-        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span></button>
         <button class="bkd-expand" id="bkd-expand-shiny" onclick="toggleBkdStrip('shiny')" title="Category breakdown">▾</button>
       </div>
     </div>
@@ -3535,37 +3222,17 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<!-- Sync Modal -->
-<div id="sync-modal" onclick="if(event.target===this)closeSyncModal()">
-  <div id="sync-card">
-
-    <!-- Sign-in section (shown when logged out) -->
-    <div id="sb-login">
-      <h2>Sync across devices</h2>
-      <p>Enter your email to receive a magic sign-in link. Your catch data will sync automatically.</p>
-      <input id="sync-email" type="email" placeholder="you@example.com"
-             onkeydown="if(event.key==='Enter')submitSyncEmail()">
-      <div class="sb-btns">
-        <button class="sb-primary" id="sb-send-btn" onclick="submitSyncEmail()">Send link</button>
-        <button class="sb-secondary" onclick="closeSyncModal()">Cancel</button>
-      </div>
-      <div id="sync-msg"></div>
+<!-- Import/Export -->
+<div id="ie-btn" onclick="document.getElementById('ie-modal').style.display='flex'" title="Import / Export data">⇅</div>
+<div id="ie-modal" onclick="if(event.target===this)this.style.display='none'">
+  <div id="ie-card">
+    <h2>Import / Export</h2>
+    <p>Save your catch data to a file, or load a previously saved file.</p>
+    <div class="ie-btns">
+      <button class="ie-primary" onclick="exportData()">⬇ Export JSON</button>
+      <label class="ie-primary" style="cursor:pointer">⬆ Import JSON<input type="file" accept=".json" style="display:none" onchange="importData(this.files[0])"></label>
     </div>
-
-    <!-- Account section (shown when logged in) -->
-    <div id="sb-account" style="display:none">
-      <h2>Sync</h2>
-      <p id="sb-user-email" style="font-weight:600;color:#1a1a1a;margin-bottom:6px;"></p>
-      <p style="margin-bottom:18px">Your catches sync automatically across devices.</p>
-      <div class="sb-btns">
-        <button class="sb-primary" onclick="syncFromSupabase(true)">Sync now</button>
-        <button class="sb-secondary" onclick="sbSignOut();closeSyncModal()">Sign out</button>
-      </div>
-      <div style="margin-top:10px;">
-        <button class="sb-secondary" style="width:100%;justify-content:center;display:flex" onclick="closeSyncModal()">Close</button>
-      </div>
-    </div>
-
+    <button class="ie-secondary" onclick="document.getElementById('ie-modal').style.display='none'">Close</button>
   </div>
 </div>
 
