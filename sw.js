@@ -1,4 +1,4 @@
-const CACHE = 'livingdex-v3';
+const CACHE = 'livingdex-v4';
 const STATIC = [
   './manifest.json',
   './icon.png',
