@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LivingHome">
   <meta name="theme-color" content="#ffffff">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>LivingHome — Pokémon Living Dex Tracker</title>
 <meta name="description" content="Track your Pokémon living dex across every game. Cloud sync across devices, shiny dex tracking, evolution chains, location data and more. Free, installable PWA.">
 <meta property="og:title" content="LivingHome — Pokémon Living Dex Tracker">
@@ -36,7 +36,7 @@
   #install-banner .install-text { flex:1; font-size:13px; color:#333; line-height:1.4; }
   #install-banner .install-text strong { display:block; font-size:14px; margin-bottom:2px; }
   #install-banner .install-close { background:none; border:none; font-size:20px; color:#999; cursor:pointer; padding:4px; line-height:1; }
-  .top-bar { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 20px; position: sticky; top: 0; z-index: 100; }
+  .top-bar { background: #fff; border-bottom: 1px solid #e8e8e8; padding: 12px 20px; padding-top: calc(env(safe-area-inset-top, 0px) + 12px); position: sticky; top: 0; z-index: 100; }
 #page-dex .top-bar { background: linear-gradient(to bottom, #f0f9e8 0%, #e0f5e8 50%, #d8f0f0 100%); border-bottom: none; }
 #page-dex .pbar-wrap { background: rgba(0,0,0,0.08); }
 #page-dex .pbar-fill { background: #1a7a5e; }
@@ -311,7 +311,7 @@
 }
 
 /* Landing */
-.landing-header { padding: 24px 16px 12px; text-align: center; background: #fff; position: relative; }
+.landing-header { padding: 24px 16px 12px; padding-top: calc(env(safe-area-inset-top, 0px) + 16px); text-align: center; background: #fff; position: relative; }
 .landing-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0 0 3px; }
 .landing-sub { font-size: 12px; color: #999; margin: 0; }
 
