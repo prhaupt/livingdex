@@ -2502,8 +2502,9 @@ function toggleCaught(dexId, boxN, name, slug) {
   sbToggle(dexId, id, !!caught[id]);
 
   // Scope lookup to dex container to avoid cross-dex ID collisions (dex + shiny share slug IDs)
+  // CSS.escape handles IDs with spaces/parentheses (e.g. "sw1_Rillaboom (Gigantamax)")
   const _con = document.getElementById(DEXES[dexId].containerId);
-  const cell = _con ? _con.querySelector('#' + id) : document.getElementById(id);
+  const cell = _con ? _con.querySelector('#' + CSS.escape(id)) : document.getElementById(id);
   if (cell) {
     const isCaught = !!caught[id];
     cell.className = 'cell' + (isCaught ? ' caught' : '') + ' popping';
@@ -2805,99 +2806,6 @@ function closeDex() {
 updateTileCounts();
 
 
-
-
-// ===== SwSh Tab =====
-
-
-
-function showTab(id) {
-  activeTab = id;
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + id).classList.add('active');
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    if (b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
-  });
-  if (id === 'swsh') renderSwSh();
-  else if (id === 'dex') render();
-}
-
-function getImgSrc(slug) {
-  const specialUrls = {
-    'floette-eternal':   'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/normal/floette-eternal.png',
-    'meowstic-m':        BASE + 'meowstic-male.png',
-    'meowstic-f':        BASE + 'meowstic-female.png',
-    'indeedee-m':        BASE + 'indeedee-male.png',
-    'indeedee-f':        BASE + 'indeedee-female.png',
-    'oinkologne-f':      BASE + 'oinkologne-female.png',
-    'basculegion-f':     BASE + 'basculegion-female.png',
-    // pokemondb HOME uses unown-a / unown-em / unown-qm as filenames
-    'unown':             BASE + 'unown-a.png',
-    'unown-exclamation': BASE + 'unown-em.png',
-    'unown-question':    BASE + 'unown-qm.png',
-  };
-  if (specialUrls[slug]) return specialUrls[slug];
-  return BASE + slug + '.png';
-}
-
-function makeCell(name, slug, isCaught, onClickFn, cellId) {
-  const cell = document.createElement('div');
-  cell.className = 'cell' + (isCaught ? ' caught' : '');
-  cell.title = name;
-  if (cellId) cell.id = cellId;
-  // Desktop click
-  cell.onclick = onClickFn;
-
-  // Touch: tap = toggle, long press = info panel
-  let _pressTimer = null;
-  let _pressMoved = false;
-  cell.addEventListener('touchstart', e => {
-    _pressMoved = false;
-    _pressTimer = setTimeout(() => {
-      if (!_pressMoved) {
-        e.preventDefault();
-        openInfoPanel(name, slug);
-      }
-    }, 500);
-  }, { passive: false });
-  cell.addEventListener('touchmove', () => { _pressMoved = true; clearTimeout(_pressTimer); }, { passive: true });
-  cell.addEventListener('touchend', e => {
-    if (_pressTimer) {
-      clearTimeout(_pressTimer);
-      // Short tap — let onclick fire normally
-    }
-  }, { passive: true });
-  cell.addEventListener('contextmenu', e => e.preventDefault()); // suppress image save menu
-
-  const img = document.createElement('img');
-  img.src = getImgSrc(slug);
-  img.alt = name;
-  img.className = isCaught ? '' : 'grey';
-  img.addEventListener('contextmenu', e => e.preventDefault());
-  img.onerror = function() {
-    const fallbackMap = {
-      'darmanitan-galarian-standard': 'darmanitan-galarian',
-      'squawkabilly-green': 'squawkabilly', 'squawkabilly-blue': 'squawkabilly',
-      'squawkabilly-yellow': 'squawkabilly', 'squawkabilly-white': 'squawkabilly',
-      'furfrou-debutante': 'furfrou-deputante', 'mimikyu': 'mimikyu-disguised',
-    };
-    if (fallbackMap[slug] && !this.src.includes(fallbackMap[slug])) {
-      this.src = BASE + fallbackMap[slug] + '.png'; return;
-    }
-    this.style.opacity = '0.2';
-    this.src = BASE + 'bulbasaur.png';
-    this.onerror = null;
-  };
-  cell.appendChild(img);
-  const lbl = document.createElement('div');
-  lbl.className = 'pname';
-  const _fn2 = formatCellName(name);
-  lbl.innerHTML = '<span class="pname-base">' + _fn2.base + (_fn2.gender ? '<span class="pname-gender">' + _fn2.gender + '</span>' : '') + '</span>' + (_fn2.tag ? '<span class="pname-tag">' + _fn2.tag + '</span>' : '');
-  cell.appendChild(lbl);
-  addInfoBtn(cell, name, slug);
-  return cell;
-}
 
 
 // ── SHINY DEX helpers ─────────────────────────────────────────────────────
