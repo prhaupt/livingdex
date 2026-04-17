@@ -647,6 +647,12 @@
 .sync-dot-el[data-status="syncing"] { display:inline-block; background:#f0a500; animation:sbpulse 0.9s infinite; }
 .sync-dot-el[data-status="synced"]  { display:inline-block; background:#1a7a5e; }
 .sync-dot-el[data-status="error"]   { display:inline-block; background:#e74c3c; }
+/* Top-bar dot: always visible — grey when signed out, coloured when active */
+.sync-top-btn .sync-dot-el          { display:inline-block; background:rgba(0,0,0,0.18); }
+.sync-top-btn .sync-dot-el[data-status="idle"]    { background:#1a7a5e; }
+.sync-top-btn .sync-dot-el[data-status="syncing"] { background:#f0a500; }
+.sync-top-btn .sync-dot-el[data-status="synced"]  { background:#1a7a5e; }
+.sync-top-btn .sync-dot-el[data-status="error"]   { background:#e74c3c; }
 .bkd-chip { flex:1; min-width:0; background:rgba(255,255,255,0.62); border-radius:10px; padding:8px 10px 7px; cursor:pointer; border:2px solid transparent; transition:border-color .15s, background .15s; }
 .bkd-chip:hover { background:rgba(255,255,255,0.85); }
 .bkd-chip.active { border-color:#7059B8; background:#fff; }
@@ -687,7 +693,7 @@
     <p class="landing-sub">Pokémon collection tracker</p>
     <button id="sync-btn" onclick="openSyncModal()">
       <span id="sync-dot" class="sync-dot-el"></span>
-      <span id="sync-label">☁ Sign in to sync</span>
+      <span id="sync-label">Sign in to sync</span>
     </button>
   </div>
   <div class="tile-grid">
@@ -961,7 +967,7 @@
       <div class="stats-row">
         <div class="pill"><strong id="cc">0</strong> / <strong id="tc">0</strong></div>
         <div class="pill"><strong id="pct">0%</strong></div>
-        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span>☁</button>
+        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span></button>
         <button class="bkd-expand" id="bkd-expand-dex" onclick="toggleBkdStrip('dex')" title="Category breakdown">▾</button>
       </div>
     </div>
@@ -3095,13 +3101,13 @@ function updateSyncUI() {
 
   if (_sbUser) {
     dots.forEach(d => { d.dataset.status = 'idle'; });
-    if (label) label.textContent = '☁ Synced';
+    if (label) label.textContent = 'Sync';
     if (login) login.style.display = 'none';
     if (acct)  acct.style.display  = 'block';
     if (emailEl) emailEl.textContent = _sbUser.email;
   } else {
     dots.forEach(d => { d.dataset.status = ''; d.removeAttribute('data-status'); });
-    if (label) label.textContent = '☁ Sign in to sync';
+    if (label) label.textContent = 'Sign in to sync';
     if (login) login.style.display = 'block';
     if (acct)  acct.style.display  = 'none';
   }
@@ -3387,7 +3393,7 @@ if ('serviceWorker' in navigator) {
       <div class="stats-row">
         <div class="pill"><strong id="shiny-cc">0</strong> / <strong id="shiny-tc">0</strong></div>
         <div class="pill"><strong id="shiny-pct">0%</strong></div>
-        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span>☁</button>
+        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span></button>
         <button class="bkd-expand" id="bkd-expand-shiny" onclick="toggleBkdStrip('shiny')" title="Category breakdown">▾</button>
       </div>
     </div>
