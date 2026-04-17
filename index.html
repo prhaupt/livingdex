@@ -3131,11 +3131,16 @@ function showSyncError(msg) {
 
 async function sbSignIn(email) {
   if (!_sb) return 'Not loaded';
-  const { error } = await _sb.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: 'https://prhaupt.github.io/livingdex/' }
-  });
-  return error?.message ?? null;
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — sync may be unavailable')), 10000));
+  try {
+    const { error } = await Promise.race([
+      _sb.auth.signInWithOtp({ email, options: { emailRedirectTo: 'https://prhaupt.github.io/livingdex/' } }),
+      timeout
+    ]);
+    return error?.message ?? null;
+  } catch (e) {
+    return e.message;
+  }
 }
 
 async function sbSignOut() {
