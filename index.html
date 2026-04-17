@@ -89,7 +89,8 @@
   .cell:hover { background: #f0f4ff; }
   .cell.caught { background: transparent; border-color: transparent; }
   /* tick removed */
-  .cell img { width: 80px; height: 80px; object-fit: contain; display: block; transition: filter .15s; flex-shrink: 0; -webkit-touch-callout: none; pointer-events: none; }
+  .cell { min-width: 0; }
+  .cell img { width: 80px; max-width: 100%; height: auto; aspect-ratio: 1; object-fit: contain; display: block; transition: filter .15s; -webkit-touch-callout: none; pointer-events: none; }
   .cell img.grey { filter: grayscale(1) opacity(0.25); }
   .cell.caught img { filter: none; }
   
