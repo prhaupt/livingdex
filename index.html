@@ -701,11 +701,9 @@
 .cell.shiny-locked img{display:none}
 .cell.shiny-locked .pname{display:none}
 
-/* ── Dynamic Island / notch colour fill (CSS-driven, no JS timing issues) ──
-   Each active page paints a fixed pseudo-element exactly env(safe-area-inset-top) tall
-   at z-index 200, matching the 0% colour-stop of that page's top-bar gradient.
-   On devices without a notch/Dynamic Island the env() resolves to 0px → invisible.
-   The JS #safe-area-fill div is kept as a belt-and-suspenders fallback. */
+/* ── Dynamic Island / notch colour fill — page::before (belt 1) ──────────
+   Each active page paints a fixed pseudo-element exactly env(safe-area-inset-top)
+   tall at z-index 200. Works for pages whose flex/overflow context allows it. */
 .page.active::before {
   content: '';
   position: fixed;
@@ -713,7 +711,7 @@
   height: env(safe-area-inset-top, 0px);
   z-index: 200;
   pointer-events: none;
-  background: #ffffff; /* default / landing */
+  background: #ffffff;
 }
 #page-dex.active::before    { background: #f0f9e8; }
 #page-shiny.active::before  { background: #c8b8ff; }
@@ -730,6 +728,36 @@
 #page-frlg.active::before   { background: #fde8d4; }
 #page-sv.active::before     { background: #fcd8d4; }
 #page-lza.active::before    { background: #e2f8f0; }
+
+/* ── Dynamic Island / notch colour fill — body::before (belt 2) ───────────
+   Driven by a JS class on <body> (e.g. body.di-shiny).  Unlike the page::before
+   rules above, <body> is never inside an overflow:hidden flex container, so this
+   pseudo-element is guaranteed to be position:fixed relative to the viewport on
+   iOS Safari regardless of the active page's layout.  z-index 300 > page::before. */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 300;
+  pointer-events: none;
+  background: #ffffff; /* landing / default */
+}
+body.di-dex::before    { background: #f0f9e8; }
+body.di-shiny::before  { background: #c8b8ff; }
+body.di-swsh::before   { background: #e8f0ff; }
+body.di-bw::before     { background: #2c2c2c; }
+body.di-b2w2::before   { background: #060c18; }
+body.di-xy::before     { background: #1a2848; }
+body.di-oras::before   { background: #8ab8d8; }
+body.di-sm::before     { background: #fce8c0; }
+body.di-usum::before   { background: #1c1008; }
+body.di-lgpe::before   { background: #f0d840; }
+body.di-bdsp::before   { background: #cce0f8; }
+body.di-la::before     { background: #cce8e0; }
+body.di-frlg::before   { background: #fde8d4; }
+body.di-sv::before     { background: #fcd8d4; }
+body.di-lza::before    { background: #e2f8f0; }
 </style>
 </head>
 <body>
@@ -2824,10 +2852,14 @@ function setThemeColor(id) {
   const color = PAGE_THEME[id] || '#ffffff';
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.content = color;
-  // Fixed overlay covers exactly env(safe-area-inset-top) — paints the Dynamic
-  // Island / notch region with the dex theme colour without touching page backgrounds.
+  // JS-driven div fallback (belt 3)
   const saFill = document.getElementById('safe-area-fill');
   if (saFill) saFill.style.background = color;
+  // Toggle body.di-<id> class — drives body::before which is guaranteed not to be
+  // clipped by any overflow:hidden container (belt 2, highest z-index = 300).
+  const b = document.body;
+  b.className = b.className.replace(/\bdi-[a-z0-9]+\b/g, '').trim();
+  if (id && id !== 'landing') b.classList.add('di-' + id);
 }
 
 function closeDex() {
