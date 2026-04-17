@@ -2809,10 +2809,6 @@ function getShinyImgSrc(slug) {
     'floette-eternal': 'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/shiny/floette-eternal.png',
   };
   if (specialShiny[slug]) return specialShiny[slug];
-  if (slug === 'unown' || slug.startsWith('unown-')) {
-    const unownSlug = slug === 'unown' ? 'unown-a' : slug;
-    return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/' + unownSlug + '.png';
-  }
   return BASE_SHINY + slug + '.png';
 }
 
@@ -2848,6 +2844,10 @@ function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
   img.className = isCaught ? '' : 'grey';
   img.addEventListener('contextmenu', e => e.preventDefault());
   img.onerror = function() {
+    const BDSP_SH = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/';
+    // ! and ? Unown use different filenames on pokemondb
+    if (slug === 'unown-exclamation') { this.src = BDSP_SH + 'unown-em.png'; this.onerror = null; return; }
+    if (slug === 'unown-question')    { this.src = BDSP_SH + 'unown-qm.png'; this.onerror = null; return; }
     const fallbackMap = {
       'darmanitan-galarian-standard': 'darmanitan-galarian',
       'squawkabilly-green': 'squawkabilly', 'squawkabilly-blue': 'squawkabilly',
