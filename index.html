@@ -628,7 +628,35 @@
 #page-shiny .pbar-wrap{background:rgba(0,0,0,0.08)}
 #page-shiny .pbar-fill{background:linear-gradient(90deg,#a060e0,#e060c0)}
 #page-shiny input[type=text]{border:1px solid rgba(0,0,0,0.12);background:rgba(255,255,255,0.6)}
-.bkd-strip { display:flex; gap:8px; padding:6px 0 10px; }
+.bkd-strip { display:flex; gap:8px; padding:6px 0 10px; flex-wrap:wrap; }
+/* Compact sync button for dex top-bars */
+.sync-top-btn {
+  background:none; border:none; cursor:pointer;
+  padding:0 4px; display:flex; align-items:center; gap:3px;
+  color:rgba(0,0,0,0.4); font-size:14px; flex-shrink:0;
+  transition:color 0.15s;
+}
+.sync-top-btn:hover { color:rgba(0,0,0,0.75); }
+/* Multi-instance sync dot (used in top-bars and landing footer) */
+.sync-dot-el {
+  width:7px; height:7px; border-radius:50%; flex-shrink:0;
+  display:none; background:#1a7a5e;
+}
+.sync-dot-el[data-status="idle"]    { display:inline-block; background:#1a7a5e; }
+.sync-dot-el[data-status="syncing"] { display:inline-block; background:#f0a500; animation:sbpulse 0.9s infinite; }
+.sync-dot-el[data-status="synced"]  { display:inline-block; background:#1a7a5e; }
+.sync-dot-el[data-status="error"]   { display:inline-block; background:#e74c3c; }
+/* Caught / Outstanding filter row inside breakdown strip */
+.bkd-filter-row { width:100%; display:flex; gap:6px; padding-top:2px; }
+.bkd-filter-btn {
+  flex:1; background:rgba(255,255,255,0.5); border:2px solid transparent;
+  border-radius:8px; padding:5px 8px; font-size:11px; font-weight:600;
+  cursor:pointer; color:#888; transition:background 0.15s,border-color 0.15s,color 0.15s;
+  text-align:center;
+}
+.bkd-filter-btn:hover { background:rgba(255,255,255,0.8); color:#555; }
+.bkd-filter-btn.active { border-color:#1a7a5e; background:rgba(255,255,255,0.85); color:#1a7a5e; }
+#page-shiny .bkd-filter-btn.active { border-color:#a060e0; color:#a060e0; }
 .bkd-chip { flex:1; min-width:0; background:rgba(255,255,255,0.62); border-radius:10px; padding:8px 10px 7px; cursor:pointer; border:2px solid transparent; transition:border-color .15s, background .15s; }
 .bkd-chip:hover { background:rgba(255,255,255,0.85); }
 .bkd-chip.active { border-color:#7059B8; background:#fff; }
@@ -930,7 +958,7 @@
   </div>
   <div class="landing-footer">
     <button id="sync-btn" onclick="openSyncModal()">
-      <span id="sync-dot"></span>
+      <span id="sync-dot" class="sync-dot-el"></span>
       <span id="sync-label">☁ Sign in to sync</span>
     </button>
   </div>
@@ -945,6 +973,7 @@
       <div class="stats-row">
         <div class="pill"><strong id="cc">0</strong> / <strong id="tc">0</strong></div>
         <div class="pill"><strong id="pct">0%</strong></div>
+        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span>☁</button>
         <button class="bkd-expand" id="bkd-expand-dex" onclick="toggleBkdStrip('dex')" title="Category breakdown">▾</button>
       </div>
     </div>
@@ -964,6 +993,15 @@
         <span class="bkd-chip-label">Females</span>
         <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-females">–</span><span class="bkd-chip-pct" id="bkd-pct-females">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-females" style="width:0%"></div></div>
+      </div>
+      <div class="bkd-chip" data-filter-dex="dex" onclick="toggleGmaxFilter('dex',this)">
+        <span class="bkd-chip-label">Gmax</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="bkd-gmax">–</span><span class="bkd-chip-pct" id="bkd-pct-gmax">0%</span></div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="bkd-bar-gmax" style="width:0%"></div></div>
+      </div>
+      <div class="bkd-filter-row">
+        <button class="bkd-filter-btn" id="fm-cat-dex" onclick="toggleFmFilter('dex','cat',this)">✓ Caught</button>
+        <button class="bkd-filter-btn" id="fm-unc-dex" onclick="toggleFmFilter('dex','unc',this)">◌ Outstanding</button>
       </div>
     </div>
     <div class="controls">
@@ -2343,7 +2381,8 @@ function getCol(dexId) {
 
 // ── Collapsed state (for HOME back-compat) ────────────────────
 let col = {};   // kept for HOME compatibility - maps to _col.dex
-let fm = '';    // filter mode
+const _fm = {};          // per-dex filter mode: 'cat' | 'unc' | ''
+const _gmaxFilter = {};  // per-dex Gmax-only filter toggle
 
 // ── RENDER ────────────────────────────────────────────────────
 function renderDex(dexId) {
@@ -2362,13 +2401,15 @@ function renderDex(dexId) {
 
   const lockFn = cfg.lockFn || null;
   boxes.forEach(box => {
+    const fmMode = _fm[dexId] || '';
     const filtered = box.p.filter(([name, slug]) => {
       const id = getCellId(dexId, box.n, name, slug);
       const isLocked = lockFn && lockFn(name, slug);
       // Locked cells: show as blank spacers only when no search/filter active
-      if (isLocked) return !q && fm !== 'cat' && fm !== 'unc';
-      if (fm === 'cat' && !caught[id]) return false;
-      if (fm === 'unc' && caught[id]) return false;
+      if (isLocked) return !q && fmMode !== 'cat' && fmMode !== 'unc' && !_gmaxFilter[dexId];
+      if (_gmaxFilter[dexId] && !name.includes('(Gigantamax)')) return false;
+      if (fmMode === 'cat' && !caught[id]) return false;
+      if (fmMode === 'unc' && caught[id]) return false;
       if (q && !name.toLowerCase().includes(q) && !slug.includes(q)) return false;
       return true;
     });
@@ -2589,14 +2630,18 @@ function updateDexBreakdown() {
   const strip = document.getElementById('bkd-strip-dex');
   if (!strip || strip.style.display === 'none') return;
   const caught = getCaught('dex');
-  const totals = {species:0, forms:0, females:0};
-  const counts  = {species:0, forms:0, females:0};
+  const totals = {species:0, forms:0, females:0, gmax:0};
+  const counts  = {species:0, forms:0, females:0, gmax:0};
   BD.forEach(box => {
     const sk = box.sk; // 'species' | 'forms' | 'females'
     box.p.forEach(([name, slug]) => {
       const isCaught = !!caught[getCellId('dex', box.n, name, slug)];
       totals[sk]++;
       if (isCaught) counts[sk]++;
+      if (name.includes('(Gigantamax)')) {
+        totals.gmax++;
+        if (isCaught) counts.gmax++;
+      }
     });
   });
   ['species','forms','females'].forEach(key => {
@@ -2609,14 +2654,23 @@ function updateDexBreakdown() {
     if (subEl) subEl.textContent = c + '/' + t;
     if (barEl) barEl.style.width = pct + '%';
   });
+  // Gmax chip
+  const gc = counts.gmax, gt = totals.gmax;
+  const gpct = gt > 0 ? Math.round(gc/gt*100) : 0;
+  const gpctEl = document.getElementById('bkd-pct-gmax');
+  const gsubEl = document.getElementById('bkd-gmax');
+  const gbarEl = document.getElementById('bkd-bar-gmax');
+  if (gpctEl) gpctEl.textContent = gpct + '%';
+  if (gsubEl) gsubEl.textContent = gc + '/' + gt;
+  if (gbarEl) gbarEl.style.width = gpct + '%';
 }
 
 function updateShinyBreakdown() {
   const strip = document.getElementById('bkd-strip-shiny');
   if (!strip || strip.style.display === 'none') return;
   const caught = getCaught('shiny');
-  const totals = {species:0, forms:0, females:0};
-  const counts  = {species:0, forms:0, females:0};
+  const totals = {species:0, forms:0, females:0, gmax:0};
+  const counts  = {species:0, forms:0, females:0, gmax:0};
   BD.forEach(box => {
     const sk = box.sk;
     box.p.forEach(([name, slug]) => {
@@ -2624,6 +2678,10 @@ function updateShinyBreakdown() {
       const isCaught = !!caught[getCellId('shiny', box.n, name, slug)];
       totals[sk]++;
       if (isCaught) counts[sk]++;
+      if (name.includes('(Gigantamax)')) {
+        totals.gmax++;
+        if (isCaught) counts.gmax++;
+      }
     });
   });
   ['species','forms','females'].forEach(key => {
@@ -2636,6 +2694,15 @@ function updateShinyBreakdown() {
     if (subEl) subEl.textContent = c + '/' + t;
     if (barEl) barEl.style.width = pct + '%';
   });
+  // Gmax chip
+  const gc = counts.gmax, gt = totals.gmax;
+  const gpct = gt > 0 ? Math.round(gc/gt*100) : 0;
+  const gpctEl = document.getElementById('shiny-bkd-pct-gmax');
+  const gsubEl = document.getElementById('shiny-bkd-gmax');
+  const gbarEl = document.getElementById('shiny-bkd-bar-gmax');
+  if (gpctEl) gpctEl.textContent = gpct + '%';
+  if (gsubEl) gsubEl.textContent = gc + '/' + gt;
+  if (gbarEl) gbarEl.style.width = gpct + '%';
 }
 
 // Section filter — toggled by clicking a bkd chip
@@ -2671,6 +2738,30 @@ function toggleSectionFilter(dexId, section, chipEl) {
       wrap.style.display = 'none';
     }
   });
+}
+
+// ── Gmax filter toggle ────────────────────────────────────────
+function toggleGmaxFilter(dexId, chipEl) {
+  _gmaxFilter[dexId] = !_gmaxFilter[dexId];
+  chipEl.classList.toggle('active', !!_gmaxFilter[dexId]);
+  renderDex(dexId);
+}
+
+// ── Caught / Outstanding filter toggle ───────────────────────
+function toggleFmFilter(dexId, mode, btnEl) {
+  if (_fm[dexId] === mode) {
+    // Deactivate: restore full view
+    _fm[dexId] = '';
+    btnEl.classList.remove('active');
+  } else {
+    _fm[dexId] = mode;
+    btnEl.classList.add('active');
+    // Deactivate the other button
+    const otherId = 'fm-' + (mode === 'cat' ? 'unc' : 'cat') + '-' + dexId;
+    const otherBtn = document.getElementById(otherId);
+    if (otherBtn) otherBtn.classList.remove('active');
+  }
+  renderDex(dexId);
 }
 
 // ── SHIMS for existing callsites ──────────────────────────────
@@ -3025,29 +3116,28 @@ async function sbSignOut() {
 
 let _syncTimer = null;
 function setSyncStatus(s) {
-  const dot = document.getElementById('sync-dot');
-  if (!dot) return;
-  dot.dataset.status = s;
+  const dots = document.querySelectorAll('.sync-dot-el');
+  dots.forEach(d => { d.dataset.status = s; });
   clearTimeout(_syncTimer);
-  if (s === 'synced') _syncTimer = setTimeout(() => { dot.dataset.status = 'idle'; }, 2000);
-  if (s === 'error')  _syncTimer = setTimeout(() => { dot.dataset.status = 'idle'; }, 8000);
+  if (s === 'synced') _syncTimer = setTimeout(() => { document.querySelectorAll('.sync-dot-el').forEach(d => { d.dataset.status = 'idle'; }); }, 2000);
+  if (s === 'error')  _syncTimer = setTimeout(() => { document.querySelectorAll('.sync-dot-el').forEach(d => { d.dataset.status = 'idle'; }); }, 8000);
 }
 
 function updateSyncUI() {
-  const dot   = document.getElementById('sync-dot');
+  const dots  = document.querySelectorAll('.sync-dot-el');
   const label = document.getElementById('sync-label');
   const login = document.getElementById('sb-login');
   const acct  = document.getElementById('sb-account');
   const emailEl = document.getElementById('sb-user-email');
 
   if (_sbUser) {
-    if (dot)   dot.dataset.status = 'idle';
-    if (label) label.textContent = _sbUser.email;
+    dots.forEach(d => { d.dataset.status = 'idle'; });
+    if (label) label.textContent = '☁ Synced';
     if (login) login.style.display = 'none';
     if (acct)  acct.style.display  = 'block';
     if (emailEl) emailEl.textContent = _sbUser.email;
   } else {
-    if (dot)   { dot.dataset.status = ''; dot.removeAttribute('data-status'); }
+    dots.forEach(d => { d.dataset.status = ''; d.removeAttribute('data-status'); });
     if (label) label.textContent = '☁ Sign in to sync';
     if (login) login.style.display = 'block';
     if (acct)  acct.style.display  = 'none';
@@ -3334,6 +3424,7 @@ if ('serviceWorker' in navigator) {
       <div class="stats-row">
         <div class="pill"><strong id="shiny-cc">0</strong> / <strong id="shiny-tc">0</strong></div>
         <div class="pill"><strong id="shiny-pct">0%</strong></div>
+        <button class="sync-top-btn" onclick="openSyncModal()" title="Sync progress"><span class="sync-dot-el"></span>☁</button>
         <button class="bkd-expand" id="bkd-expand-shiny" onclick="toggleBkdStrip('shiny')" title="Category breakdown">▾</button>
       </div>
     </div>
@@ -3353,6 +3444,15 @@ if ('serviceWorker' in navigator) {
         <span class="bkd-chip-label">Females</span>
         <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-females">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-females">0%</span></div>
         <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-females" style="width:0%"></div></div>
+      </div>
+      <div class="bkd-chip" data-filter-dex="shiny" onclick="toggleGmaxFilter('shiny',this)">
+        <span class="bkd-chip-label">Gmax</span>
+        <div class="bkd-chip-stats"><span class="bkd-chip-sub" id="shiny-bkd-gmax">–</span><span class="bkd-chip-pct" id="shiny-bkd-pct-gmax">0%</span></div>
+        <div class="bkd-chip-bar"><div class="bkd-chip-fill" id="shiny-bkd-bar-gmax" style="width:0%"></div></div>
+      </div>
+      <div class="bkd-filter-row">
+        <button class="bkd-filter-btn" id="fm-cat-shiny" onclick="toggleFmFilter('shiny','cat',this)">✓ Caught</button>
+        <button class="bkd-filter-btn" id="fm-unc-shiny" onclick="toggleFmFilter('shiny','unc',this)">◌ Outstanding</button>
       </div>
     </div>
     <div class="controls">
