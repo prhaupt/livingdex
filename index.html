@@ -649,6 +649,9 @@
 .cell.shiny-locked{cursor:default;pointer-events:none;background:transparent;border-color:transparent}
 .cell.shiny-locked img{display:none}
 .cell.shiny-locked .pname{display:none}
+/* pokemondb HOME shiny sprites are 2x JPEGs with white backgrounds;
+   multiply blend removes the white and leaves sprite colours intact */
+#page-shiny .cell img, .tile-bg-shiny .tile-sprite { mix-blend-mode: multiply; }
 </style>
 </head>
 <body>
