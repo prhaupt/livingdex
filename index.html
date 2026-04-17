@@ -2810,7 +2810,10 @@ function getShinyImgSrc(slug) {
   };
   if (specialShiny[slug]) return specialShiny[slug];
   if (slug === 'unown' || slug.startsWith('unown-')) {
-    const unownSlug = slug === 'unown' ? 'unown-a' : slug;
+    const unownSlug = slug === 'unown' ? 'unown-a'
+      : slug === 'unown-exclamation' ? 'unown-em'
+      : slug === 'unown-question'    ? 'unown-qm'
+      : slug;
     return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/' + unownSlug + '.png';
   }
   return BASE_SHINY + slug + '.png';
@@ -2854,6 +2857,13 @@ function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
       'squawkabilly-yellow': 'squawkabilly', 'squawkabilly-white': 'squawkabilly',
       'furfrou-debutante': 'furfrou-deputante', 'mimikyu': 'mimikyu-disguised',
     };
+    const BDSP_SHINY = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/';
+    if (slug === 'unown-exclamation' && !this.src.includes('unown-em')) {
+      this.src = BDSP_SHINY + 'unown-em.png'; return;
+    }
+    if (slug === 'unown-question' && !this.src.includes('unown-qm')) {
+      this.src = BDSP_SHINY + 'unown-qm.png'; return;
+    }
     if (fallbackMap[slug] && !this.src.includes(fallbackMap[slug])) {
       this.src = BASE_SHINY + fallbackMap[slug] + '.png'; return;
     }
