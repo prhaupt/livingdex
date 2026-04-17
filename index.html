@@ -1925,22 +1925,19 @@ function showTab(id) {
 
 function getImgSrc(slug) {
   const specialUrls = {
-    'floette-eternal': 'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/normal/floette-eternal.png',
-    'meowstic-m': 'https://img.pokemondb.net/sprites/home/normal/meowstic-male.png',
-    'meowstic-f': 'https://img.pokemondb.net/sprites/home/normal/meowstic-female.png',
-    'indeedee-m': 'https://img.pokemondb.net/sprites/home/normal/indeedee-male.png',
-    'indeedee-f': 'https://img.pokemondb.net/sprites/home/normal/indeedee-female.png',
-    'oinkologne-f': 'https://img.pokemondb.net/sprites/home/normal/oinkologne-female.png',
-    'basculegion-f': 'https://img.pokemondb.net/sprites/home/normal/basculegion-female.png',
+    'floette-eternal':   'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/normal/floette-eternal.png',
+    'meowstic-m':        BASE + 'meowstic-male.png',
+    'meowstic-f':        BASE + 'meowstic-female.png',
+    'indeedee-m':        BASE + 'indeedee-male.png',
+    'indeedee-f':        BASE + 'indeedee-female.png',
+    'oinkologne-f':      BASE + 'oinkologne-female.png',
+    'basculegion-f':     BASE + 'basculegion-female.png',
+    // pokemondb HOME uses unown-a / unown-em / unown-qm as filenames
+    'unown':             BASE + 'unown-a.png',
+    'unown-exclamation': BASE + 'unown-em.png',
+    'unown-question':    BASE + 'unown-qm.png',
   };
   if (specialUrls[slug]) return specialUrls[slug];
-  if (slug === 'unown' || slug.startsWith('unown-')) {
-    const unownSlug = slug === 'unown' ? 'unown-a'
-      : slug === 'unown-exclamation' ? 'unown-em'
-      : slug === 'unown-question'    ? 'unown-qm'
-      : slug;
-    return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/' + unownSlug + '.png';
-  }
   return BASE + slug + '.png';
 }
 
@@ -1985,12 +1982,6 @@ function makeCell(name, slug, isCaught, onClickFn, cellId) {
       'squawkabilly-yellow': 'squawkabilly', 'squawkabilly-white': 'squawkabilly',
       'furfrou-debutante': 'furfrou-deputante', 'mimikyu': 'mimikyu-disguised',
     };
-    if (slug === 'unown-exclamation' && this.src.includes('unown-exclamation.png')) {
-      this.src = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/unown-em.png'; return;
-    }
-    if (slug === 'unown-question' && this.src.includes('unown-question.png')) {
-      this.src = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/unown-qm.png'; return;
-    }
     if (fallbackMap[slug] && !this.src.includes(fallbackMap[slug])) {
       this.src = BASE + fallbackMap[slug] + '.png'; return;
     }
@@ -2719,22 +2710,19 @@ function showTab(id) {
 
 function getImgSrc(slug) {
   const specialUrls = {
-    'floette-eternal': 'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/normal/floette-eternal.png',
-    'meowstic-m': 'https://img.pokemondb.net/sprites/home/normal/meowstic-male.png',
-    'meowstic-f': 'https://img.pokemondb.net/sprites/home/normal/meowstic-female.png',
-    'indeedee-m': 'https://img.pokemondb.net/sprites/home/normal/indeedee-male.png',
-    'indeedee-f': 'https://img.pokemondb.net/sprites/home/normal/indeedee-female.png',
-    'oinkologne-f': 'https://img.pokemondb.net/sprites/home/normal/oinkologne-female.png',
-    'basculegion-f': 'https://img.pokemondb.net/sprites/home/normal/basculegion-female.png',
+    'floette-eternal':   'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/normal/floette-eternal.png',
+    'meowstic-m':        BASE + 'meowstic-male.png',
+    'meowstic-f':        BASE + 'meowstic-female.png',
+    'indeedee-m':        BASE + 'indeedee-male.png',
+    'indeedee-f':        BASE + 'indeedee-female.png',
+    'oinkologne-f':      BASE + 'oinkologne-female.png',
+    'basculegion-f':     BASE + 'basculegion-female.png',
+    // pokemondb HOME uses unown-a / unown-em / unown-qm as filenames
+    'unown':             BASE + 'unown-a.png',
+    'unown-exclamation': BASE + 'unown-em.png',
+    'unown-question':    BASE + 'unown-qm.png',
   };
   if (specialUrls[slug]) return specialUrls[slug];
-  if (slug === 'unown' || slug.startsWith('unown-')) {
-    const unownSlug = slug === 'unown' ? 'unown-a'
-      : slug === 'unown-exclamation' ? 'unown-em'
-      : slug === 'unown-question'    ? 'unown-qm'
-      : slug;
-    return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/' + unownSlug + '.png';
-  }
   return BASE + slug + '.png';
 }
 
@@ -2779,12 +2767,6 @@ function makeCell(name, slug, isCaught, onClickFn, cellId) {
       'squawkabilly-yellow': 'squawkabilly', 'squawkabilly-white': 'squawkabilly',
       'furfrou-debutante': 'furfrou-deputante', 'mimikyu': 'mimikyu-disguised',
     };
-    if (slug === 'unown-exclamation' && this.src.includes('unown-exclamation.png')) {
-      this.src = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/unown-em.png'; return;
-    }
-    if (slug === 'unown-question' && this.src.includes('unown-question.png')) {
-      this.src = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/normal/unown-qm.png'; return;
-    }
     if (fallbackMap[slug] && !this.src.includes(fallbackMap[slug])) {
       this.src = BASE + fallbackMap[slug] + '.png'; return;
     }
@@ -2813,7 +2795,8 @@ function getShinyImgSrc(slug) {
     'oinkologne-f':     'https://img.pokemondb.net/sprites/home/shiny/oinkologne-female.png',
     'basculegion-f':    'https://img.pokemondb.net/sprites/home/shiny/basculegion-female.png',
     'floette-eternal':  'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/shiny/floette-eternal.png',
-    // pokemondb uses unown-em / unown-qm as the filename for ! and ?
+    // pokemondb HOME uses unown-a / unown-em / unown-qm as filenames
+    'unown':             BASE_SHINY + 'unown-a.png',
     'unown-exclamation': BASE_SHINY + 'unown-em.png',
     'unown-question':    BASE_SHINY + 'unown-qm.png',
   };
