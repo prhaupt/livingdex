@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="LivingHome">
-  <meta name="theme-color" content="#7059B8">
+  <meta name="theme-color" content="#ffffff">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LivingHome — Pokémon Living Dex Tracker</title>
 <meta name="description" content="Track your Pokémon living dex across every game. Cloud sync across devices, shiny dex tracking, evolution chains, location data and more. Free, installable PWA.">
@@ -2763,9 +2763,33 @@ function renderSwSh()  { renderDex('swsh'); }
 function renderBW()    { renderDex('bw'); }
 
 
+const PAGE_THEME = {
+  landing: '#ffffff',
+  dex:     '#f0f9e8',
+  shiny:   '#ede8ff',
+  swsh:    '#e8f0ff',
+  bw:      '#2c2c2c',
+  b2w2:    '#060c18',
+  xy:      '#1a2848',
+  oras:    '#8ab8d8',
+  sm:      '#fce8c0',
+  usum:    '#1c1008',
+  lgpe:    '#fff4c8',
+  bdsp:    '#cce0f8',
+  la:      '#cce8e0',
+  frlg:    '#fde8d4',
+  sv:      '#fcd8d4',
+  lza:     '#e2f8f0',
+};
+function setThemeColor(id) {
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = PAGE_THEME[id] || '#ffffff';
+}
+
 function closeDex() {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-landing').classList.add('active');
+  setThemeColor('landing');
   activePage = 'landing';
   updateTileCounts();
   window.scrollTo(0, 0);
@@ -2958,6 +2982,7 @@ function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
 function openDex(id) {
   document.getElementById('page-landing').classList.remove('active');
   document.getElementById('page-' + id).classList.add('active');
+  setThemeColor(id);
   activePage = id;
   activeTab = id;
   renderDex(id);
