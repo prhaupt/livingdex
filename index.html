@@ -3130,14 +3130,16 @@ function showSyncError(msg) {
 }
 
 async function sbSignIn(email) {
+  const SB_URL = 'https://degffzqwcphnbwmskatf.supabase.co';
+  const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZ2ZmenF3Y3BobmJ3bXNrYXRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMjkxMTQsImV4cCI6MjA5MTkwNTExNH0.9zNtE2gzoqhe2SBtwNKvQmPQzks5QzEyTN1CRDEQUYs';
   const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('Request timed out — check your connection')), 10000));
   try {
-    const fetchP = fetch(`${_SB_URL}/auth/v1/otp`, {
+    const fetchP = fetch(SB_URL + '/auth/v1/otp', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': _SB_KEY,
-        'Authorization': `Bearer ${_SB_KEY}`
+        'apikey': SB_KEY,
+        'Authorization': 'Bearer ' + SB_KEY
       },
       body: JSON.stringify({
         email,
@@ -3147,12 +3149,13 @@ async function sbSignIn(email) {
     }).then(async r => {
       if (!r.ok) {
         const body = await r.json().catch(() => ({}));
-        throw new Error(body.msg || body.message || body.error_description || `Error ${r.status}`);
+        throw new Error(body.msg || body.message || body.error_description || 'Error ' + r.status);
       }
     });
     await Promise.race([fetchP, timeout]);
     return null;
   } catch (e) {
+    console.error('sbSignIn error:', e);
     return e.message;
   }
 }
