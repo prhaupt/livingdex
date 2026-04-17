@@ -649,9 +649,6 @@
 .cell.shiny-locked{cursor:default;pointer-events:none;background:transparent;border-color:transparent}
 .cell.shiny-locked img{display:none}
 .cell.shiny-locked .pname{display:none}
-/* pokemondb HOME shiny sprites are 2x JPEGs with white backgrounds;
-   multiply blend removes the white and leaves sprite colours intact */
-#page-shiny .cell img, .tile-bg-shiny .tile-sprite { mix-blend-mode: multiply; }
 </style>
 </head>
 <body>
@@ -690,7 +687,7 @@
     <!-- Shiny HOME -->
     <div class="dex-tile" onclick="openDex('shiny')">
       <div class="tile-bg tile-bg-shiny">
-        <img class="tile-sprite" src="https://img.pokemondb.net/sprites/home/shiny/2x/mew.jpg" alt="Shiny Mew">
+        <img class="tile-sprite" src="https://img.pokemondb.net/sprites/home/shiny/mew.png" alt="Shiny Mew">
       </div>
       <div class="tile-info">
         <div class="tile-name">Pokémon HOME</div>
@@ -1204,7 +1201,7 @@ const LZA_SECTION_LABELS={lumiose:"Lumiose",hyperspace:"Hyperspace"};
 
 
 const BASE = "https://img.pokemondb.net/sprites/home/normal/";
-const BASE_SHINY = "https://img.pokemondb.net/sprites/home/shiny/2x/";
+const BASE_SHINY = "https://img.pokemondb.net/sprites/home/shiny/";
 
 // Shiny-locked Pokémon: blank cells in the shiny dex (unobtainable as shiny)
 const SHINY_LOCKED_SLUGS = new Set([
@@ -2803,23 +2800,20 @@ function makeCell(name, slug, isCaught, onClickFn, cellId) {
 // ── SHINY DEX helpers ─────────────────────────────────────────────────────
 function getShinyImgSrc(slug) {
   const specialShiny = {
-    'meowstic-m':    'https://img.pokemondb.net/sprites/home/shiny/2x/meowstic-male.jpg',
-    'meowstic-f':    'https://img.pokemondb.net/sprites/home/shiny/2x/meowstic-female.jpg',
-    'indeedee-m':    'https://img.pokemondb.net/sprites/home/shiny/2x/indeedee-male.jpg',
-    'indeedee-f':    'https://img.pokemondb.net/sprites/home/shiny/2x/indeedee-female.jpg',
-    'oinkologne-f':  'https://img.pokemondb.net/sprites/home/shiny/2x/oinkologne-female.jpg',
-    'basculegion-f': 'https://img.pokemondb.net/sprites/home/shiny/2x/basculegion-female.jpg',
+    'meowstic-m':    'https://img.pokemondb.net/sprites/home/shiny/meowstic-male.png',
+    'meowstic-f':    'https://img.pokemondb.net/sprites/home/shiny/meowstic-female.png',
+    'indeedee-m':    'https://img.pokemondb.net/sprites/home/shiny/indeedee-male.png',
+    'indeedee-f':    'https://img.pokemondb.net/sprites/home/shiny/indeedee-female.png',
+    'oinkologne-f':  'https://img.pokemondb.net/sprites/home/shiny/oinkologne-female.png',
+    'basculegion-f': 'https://img.pokemondb.net/sprites/home/shiny/basculegion-female.png',
     'floette-eternal': 'https://img.pokemondb.net/sprites/ultra-sun-ultra-moon/shiny/floette-eternal.png',
   };
   if (specialShiny[slug]) return specialShiny[slug];
   if (slug === 'unown' || slug.startsWith('unown-')) {
-    const unownSlug = slug === 'unown' ? 'unown-a'
-      : slug === 'unown-exclamation' ? 'unown-em'
-      : slug === 'unown-question'    ? 'unown-qm'
-      : slug;
+    const unownSlug = slug === 'unown' ? 'unown-a' : slug;
     return 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/' + unownSlug + '.png';
   }
-  return BASE_SHINY + slug + '.jpg';
+  return BASE_SHINY + slug + '.png';
 }
 
 function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
@@ -2860,15 +2854,8 @@ function makeShinyCell(name, slug, isCaught, onClickFn, cellId) {
       'squawkabilly-yellow': 'squawkabilly', 'squawkabilly-white': 'squawkabilly',
       'furfrou-debutante': 'furfrou-deputante', 'mimikyu': 'mimikyu-disguised',
     };
-    const BDSP_SHINY = 'https://img.pokemondb.net/sprites/brilliant-diamond-shining-pearl/shiny/';
-    if (slug === 'unown-exclamation' && !this.src.includes('unown-em')) {
-      this.src = BDSP_SHINY + 'unown-em.png'; return;
-    }
-    if (slug === 'unown-question' && !this.src.includes('unown-qm')) {
-      this.src = BDSP_SHINY + 'unown-qm.png'; return;
-    }
     if (fallbackMap[slug] && !this.src.includes(fallbackMap[slug])) {
-      this.src = BASE_SHINY + fallbackMap[slug] + '.jpg'; return;
+      this.src = BASE_SHINY + fallbackMap[slug] + '.png'; return;
     }
     this.style.opacity = '0.12';
     this.onerror = null;
