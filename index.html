@@ -3257,7 +3257,7 @@ async function submitSyncEmail() {
 // Load Supabase SDK asynchronously after page load
 window.addEventListener('load', () => {
   const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js';
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.103.3/dist/umd/supabase.min.js';
   s.onload  = initSupabase;
   s.onerror = () => console.warn('Supabase SDK failed to load — offline only');
   document.head.appendChild(s);
