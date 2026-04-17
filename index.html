@@ -1222,7 +1222,7 @@ const SHINY_LOCKED_SLUGS = new Set([
   'gouging-fire','raging-bolt','iron-boulder','iron-crown',
   'terapagos',
 ]);
-const SHINY_LOCKED_NAMES = new Set(['Greninja Battle Bond']); // shares slug with regular Greninja
+const SHINY_LOCKED_NAMES = new Set(['Battle Bond']); // shares slug 'greninja' with regular Greninja
 function isShinyLocked(name, slug) {
   return SHINY_LOCKED_SLUGS.has(slug) || SHINY_LOCKED_NAMES.has(name);
 }
@@ -2453,7 +2453,9 @@ function toggleCaught(dexId, boxN, name, slug) {
   saveCaught(dexId);
   sbToggle(dexId, id, !!caught[id]);
 
-  const cell = document.getElementById(id);
+  // Scope lookup to dex container to avoid cross-dex ID collisions (dex + shiny share slug IDs)
+  const _con = document.getElementById(DEXES[dexId].containerId);
+  const cell = _con ? _con.querySelector('#' + id) : document.getElementById(id);
   if (cell) {
     const isCaught = !!caught[id];
     cell.className = 'cell' + (isCaught ? ' caught' : '') + ' popping';
