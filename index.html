@@ -26,6 +26,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { background: #fff; overscroll-behavior: none; overflow-x: hidden; }
   body { font-family: system-ui, -apple-system, sans-serif; background: #fff; color: #1a1a1a; min-height: 100vh; overflow-x: hidden; -webkit-user-select: none; user-select: none; }
+  /* Dynamic Island / notch colour fill — covers env(safe-area-inset-top) exactly.
+     Driven by JS (setThemeColor). On devices without a notch height is 0 so invisible. */
+  #safe-area-fill { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top, 0px); background: #fff; z-index: 101; pointer-events: none; }
   @media (pointer: coarse) {
     * { scrollbar-width: none; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
@@ -711,6 +714,11 @@
 </div>
 
 <!-- Landing Page -->
+<!-- Safe-area fill: covers Dynamic Island / notch area with the current dex theme colour.
+     position:fixed ensures it's always at the absolute top of the viewport regardless of
+     which page element is active. setThemeColor() updates its background when navigating. -->
+<div id="safe-area-fill"></div>
+
 <div id="page-landing" class="page active">
   <div class="landing-header">
     <h1 class="landing-title"><img src="icon.png" alt="" width="28" height="28" style="border-radius:7px;vertical-align:middle;margin-right:7px;margin-bottom:2px;">LivingHome</h1>
@@ -2786,9 +2794,12 @@ function setThemeColor(id) {
   const color = PAGE_THEME[id] || '#ffffff';
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.content = color;
-  // Also set html background — iOS uses this to fill the safe-area
-  // inset behind the Dynamic Island when the meta tag alone is unreliable
   document.documentElement.style.background = color;
+  document.body.style.background = color;
+  // Fixed overlay that paints exactly the safe-area-inset-top region — the most
+  // reliable way to colour the Dynamic Island / notch on all dex pages.
+  const saFill = document.getElementById('safe-area-fill');
+  if (saFill) saFill.style.background = color;
 }
 
 function closeDex() {
