@@ -1003,7 +1003,7 @@ body.di-lza::before    { background: #e2f8f0; }
 
 
 <script>
-const APP_VERSION = 'v1.4 · 2026-04-16';
+const APP_VERSION = 'v1.5 · 2026-04-18';
 
 // HOME caught state shim - getCaught('dex') reads from localStorage
 // [display name, pokemondb slug]
@@ -1542,7 +1542,7 @@ async function fetchPokemonInfo(name, slug, isShiny = false) {
   const POKEAPI = 'https://pokeapi.co/api/v2/';
 
   // Check sessionStorage cache first — key on apiName so regional forms get their own slot
-  const cacheKey = 'pkinfo_' + apiName;
+  const cacheKey = 'pkinfo2_' + apiName;
   try {
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
