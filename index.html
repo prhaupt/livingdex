@@ -65,14 +65,6 @@
      then lay their box-cards out in columns internally */
   .swsh-section-wrap { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; gap: 10px; }
   .swsh-section-wrap > * { align-self: start; }
-  @media (min-width: 760px) {
-    .boxes            { grid-template-columns: repeat(2, 1fr); }
-    .swsh-section-wrap { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (min-width: 1400px) {
-    .boxes            { grid-template-columns: repeat(3, 1fr); }
-    .swsh-section-wrap { grid-template-columns: repeat(3, 1fr); }
-  }
   .box-card { background: #fafafa; border: 1px solid #ebebeb; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px; }
   .box-hdr { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: #f8f8f3; border-bottom: 1px solid #e8e8e0; cursor: pointer; user-select: none; }
   .box-hdr:hover { background: #f0f0ea; }
