@@ -2512,6 +2512,7 @@ async function gistLoad() {
       }
       for (const id of Object.keys(DEXES)) delete _caughtCache[id];
     }
+    _lastGistLoad = Date.now();
     gistSetStatus('synced');
   } catch(e) {
     console.warn('Gist load failed:', e);
@@ -2541,6 +2542,24 @@ function gistScheduleSave() {
   clearTimeout(_gistSaveTimer);
   _gistSaveTimer = setTimeout(gistSave, 3000);
 }
+
+// ── Auto-fetch: visibilitychange + periodic poll ──────────────
+let _lastGistLoad = 0;
+const GIST_MIN_FETCH_INTERVAL = 30 * 1000;       // ignore if synced <30s ago
+const GIST_POLL_INTERVAL      = 5 * 60 * 1000;   // background poll every 5 min
+
+async function gistLoadIfStale() {
+  if (!localStorage.getItem(GIST_TOKEN_KEY)) return;
+  if (Date.now() - _lastGistLoad < GIST_MIN_FETCH_INTERVAL) return;
+  await gistLoad();
+  _lastGistLoad = Date.now();
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') gistLoadIfStale();
+});
+
+setInterval(gistLoadIfStale, GIST_POLL_INTERVAL);
 
 // ── Sync modal UI ─────────────────────────────────────────────
 function openSyncModal() {
