@@ -592,6 +592,53 @@
   background: #f0f0f0; color: #555; font-size: 14px;
   border: none; cursor: pointer;
 }
+
+/* ── Gist Sync ─────────────────────────────────────── */
+#sync-dot {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  right: 14px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 450;
+  transition: background 0.3s, transform 0.15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+#sync-dot:active { transform: scale(1.3); }
+#sync-dot.sync-synced  { background: #2ecc71; }
+#sync-dot.sync-pending { background: #f39c12; }
+#sync-dot.sync-saving  { background: #3498db; animation: sync-pulse 0.9s ease-in-out infinite; }
+#sync-dot.sync-error   { background: #e74c3c; }
+#sync-dot.sync-idle    { background: #c8c8c8; }
+@keyframes sync-pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+#sync-modal {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+}
+#sync-card {
+  background: #fff; border-radius: 18px; padding: 28px 24px 20px;
+  max-width: 320px; width: 90%; box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+#sync-card h2 { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+#sync-card p  { font-size: 13px; color: #666; margin-bottom: 14px; line-height: 1.5; }
+#sync-token-input {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid #ddd; border-radius: 10px;
+  padding: 10px 12px; font-size: 13px; color: #1a1a1a;
+  margin-bottom: 10px; font-family: monospace;
+  outline: none;
+}
+#sync-token-input:focus { border-color: #1D9E75; }
+#sync-status-msg {
+  font-size: 12px; min-height: 16px;
+  margin-bottom: 14px; color: #888; text-align: center;
+}
+#sync-status-msg.err { color: #e74c3c; }
+#sync-status-msg.ok  { color: #2ecc71; }
 </style>
 </head>
 <body>
@@ -2414,6 +2461,164 @@ function getCaught(dexId) {
 }
 function saveCaught(dexId) {
   try { localStorage.setItem(DEXES[dexId].key, JSON.stringify(_caughtCache[dexId])); } catch(e) {}
+  gistScheduleSave();
+}
+
+// ── GitHub Gist Sync ──────────────────────────────────────────
+const GIST_TOKEN_KEY = 'livingdex_gist_token';
+const GIST_ID_KEY    = 'livingdex_gist_id';
+const GIST_FILENAME  = 'livingdex_caught.json';
+let _gistSaveTimer = null;
+
+function _allDexData() {
+  const out = {};
+  for (const id of Object.keys(DEXES)) {
+    const key = DEXES[id].key;
+    const raw = localStorage.getItem(key);
+    if (raw) out[key] = JSON.parse(raw);
+  }
+  return out;
+}
+
+function gistSetStatus(status) {
+  const dot = document.getElementById('sync-dot');
+  if (!dot) return;
+  dot.className = 'sync-' + status;
+  const labels = { synced:'Synced', pending:'Saving soon…', saving:'Saving…', error:'Sync error — tap for details', idle:'Sync not set up — tap to connect' };
+  dot.title = labels[status] || '';
+}
+
+async function _gistRequest(method, path, body) {
+  const token = localStorage.getItem(GIST_TOKEN_KEY);
+  if (!token) throw new Error('No token');
+  const res = await fetch('https://api.github.com/gists' + path, {
+    method,
+    headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) { const t = await res.text(); throw new Error(`GitHub ${res.status}: ${t}`); }
+  return res.json();
+}
+
+async function gistLoad() {
+  const token = localStorage.getItem(GIST_TOKEN_KEY);
+  const gistId = localStorage.getItem(GIST_ID_KEY);
+  if (!token || !gistId) { gistSetStatus('idle'); return; }
+  try {
+    gistSetStatus('saving');
+    const data = await _gistRequest('GET', '/' + gistId);
+    const content = data.files?.[GIST_FILENAME]?.content;
+    if (content) {
+      const parsed = JSON.parse(content);
+      for (const [key, val] of Object.entries(parsed)) {
+        try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+      }
+      for (const id of Object.keys(DEXES)) delete _caughtCache[id];
+    }
+    gistSetStatus('synced');
+  } catch(e) {
+    console.warn('Gist load failed:', e);
+    gistSetStatus('error');
+  }
+}
+
+async function gistSave() {
+  const token = localStorage.getItem(GIST_TOKEN_KEY);
+  const gistId = localStorage.getItem(GIST_ID_KEY);
+  if (!token || !gistId) return;
+  gistSetStatus('saving');
+  try {
+    await _gistRequest('PATCH', '/' + gistId, {
+      files: { [GIST_FILENAME]: { content: JSON.stringify(_allDexData()) } }
+    });
+    gistSetStatus('synced');
+  } catch(e) {
+    console.warn('Gist save failed:', e);
+    gistSetStatus('error');
+  }
+}
+
+function gistScheduleSave() {
+  if (!localStorage.getItem(GIST_TOKEN_KEY)) return;
+  gistSetStatus('pending');
+  clearTimeout(_gistSaveTimer);
+  _gistSaveTimer = setTimeout(gistSave, 3000);
+}
+
+// ── Sync modal UI ─────────────────────────────────────────────
+function openSyncModal() {
+  const modal = document.getElementById('sync-modal');
+  const hasToken = !!localStorage.getItem(GIST_TOKEN_KEY);
+  document.getElementById('sync-setup-view').style.display = hasToken ? 'none' : '';
+  document.getElementById('sync-connected-view').style.display = hasToken ? '' : 'none';
+  if (hasToken) {
+    const gistId = localStorage.getItem(GIST_ID_KEY);
+    document.getElementById('sync-gist-link').textContent = gistId ? 'Gist ID: ' + gistId : '';
+  } else {
+    document.getElementById('sync-token-input').value = '';
+    document.getElementById('sync-status-msg').textContent = '';
+    document.getElementById('sync-status-msg').className = '';
+  }
+  modal.style.display = 'flex';
+}
+function closeSyncModal() {
+  document.getElementById('sync-modal').style.display = 'none';
+}
+async function connectGist() {
+  const token = document.getElementById('sync-token-input').value.trim();
+  const msg = document.getElementById('sync-status-msg');
+  if (!token) { msg.textContent = 'Please paste your token.'; msg.className = 'err'; return; }
+  msg.textContent = 'Connecting…'; msg.className = '';
+  try {
+    // Try to find an existing LivingDex gist
+    const list = await (await fetch('https://api.github.com/gists', {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' }
+    })).json();
+    if (!Array.isArray(list)) throw new Error('Bad response — check your token');
+    let gistId = null;
+    for (const g of list) {
+      if (g.files && g.files[GIST_FILENAME]) { gistId = g.id; break; }
+    }
+    if (!gistId) {
+      // Create a new gist
+      const created = await (await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json', 'Accept': 'application/vnd.github+json' },
+        body: JSON.stringify({ description: 'LivingDex — Caught Progress', public: false, files: { [GIST_FILENAME]: { content: JSON.stringify(_allDexData()) } } })
+      })).json();
+      if (!created.id) throw new Error('Failed to create gist');
+      gistId = created.id;
+    }
+    localStorage.setItem(GIST_TOKEN_KEY, token);
+    localStorage.setItem(GIST_ID_KEY, gistId);
+    msg.textContent = '✓ Connected!'; msg.className = 'ok';
+    setTimeout(() => {
+      closeSyncModal();
+      gistLoad();
+    }, 800);
+  } catch(e) {
+    msg.textContent = e.message || 'Connection failed.'; msg.className = 'err';
+  }
+}
+function disconnectGist() {
+  if (!confirm('Disconnect GitHub Gist sync? Your local progress is kept.')) return;
+  localStorage.removeItem(GIST_TOKEN_KEY);
+  localStorage.removeItem(GIST_ID_KEY);
+  gistSetStatus('idle');
+  closeSyncModal();
+}
+async function syncNow() {
+  closeSyncModal();
+  await gistLoad();
+  // Re-render whichever dex page is active so caught states refresh
+  const activePage = document.querySelector('.page.active');
+  if (activePage) {
+    const dexId = Object.keys(DEXES).find(id => {
+      const cfg = DEXES[id];
+      return cfg.containerId && document.getElementById(cfg.containerId)?.closest('.page.active');
+    });
+    if (dexId) renderDex(dexId);
+  }
 }
 
 // ── Get boxes from config ─────────────────────────────────────
@@ -2970,6 +3175,8 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('info-close').addEventListener('touchend', e => { e.preventDefault(); closeInfoPanel(); });
   document.getElementById('info-overlay').addEventListener('touchend', e => { e.preventDefault(); closeInfoPanel(); });
+  // Load caught state from Gist on startup (no-op if not configured)
+  gistLoad();
 });
 </script>
 
@@ -3246,6 +3453,33 @@ window.addEventListener('DOMContentLoaded', () => {
       <button class="ie-primary" onclick="importData()">⬆ Import JSON</button>
     </div>
     <button class="ie-secondary" onclick="document.getElementById('ie-modal').style.display='none'">Close</button>
+  </div>
+</div>
+
+<!-- Sync dot (always visible, top-right) -->
+<div id="sync-dot" class="sync-idle" onclick="openSyncModal()" title="Sync status"></div>
+
+<!-- Gist sync settings modal -->
+<div id="sync-modal" onclick="if(event.target===this)closeSyncModal()">
+  <div id="sync-card">
+    <h2 id="sync-modal-title">GitHub Gist Sync</h2>
+    <p id="sync-modal-desc">Paste a GitHub personal access token with <strong>gist</strong> scope. Your progress will sync automatically across devices.</p>
+    <div id="sync-setup-view">
+      <input id="sync-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false"/>
+      <div id="sync-status-msg"></div>
+      <div class="ie-btns">
+        <button class="ie-primary" onclick="connectGist()">Connect</button>
+      </div>
+    </div>
+    <div id="sync-connected-view" style="display:none">
+      <div id="sync-status-msg2" style="font-size:13px;color:#2ecc71;text-align:center;margin-bottom:16px;font-weight:600;">✓ Connected to GitHub Gist</div>
+      <div id="sync-gist-link" style="font-size:12px;color:#888;text-align:center;margin-bottom:16px;word-break:break-all;"></div>
+      <div class="ie-btns">
+        <button class="ie-primary" onclick="syncNow()" style="background:#3498db;">↻ Sync Now</button>
+        <button class="ie-secondary" onclick="disconnectGist()" style="color:#e74c3c;">Disconnect</button>
+      </div>
+    </div>
+    <button class="ie-secondary" onclick="closeSyncModal()" style="margin-top:4px;">Close</button>
   </div>
 </div>
 
