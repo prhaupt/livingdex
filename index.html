@@ -1378,10 +1378,6 @@ function closeInfoPanel() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeInfoPanel(); });
-// iOS PWA: fixed-position buttons only get focus on first tap, click on second.
-// touchend fires immediately on first tap — preventDefault stops the ghost click.
-document.getElementById('info-close').addEventListener('touchend', e => { e.preventDefault(); closeInfoPanel(); });
-document.getElementById('info-overlay').addEventListener('touchend', e => { e.preventDefault(); closeInfoPanel(); });
 
 const GAME_CONFIG = {"RBY":{"games":[["Red","#e74c3c"],["Blue","#2980b9"],["Yellow","#f1c40f"]]},"GSC":{"games":[["Gold","#d4a017"],["Silver","#7f8c8d"],["Crystal","#3498db"]]},"RS":{"games":[["Ruby","#c0392b"],["Sapphire","#2471a3"]]},"FRLG":{"games":[["FireRed","#e74c3c"],["LeafGreen","#27ae60"]]},"Em":{"games":[["Emerald","#1e8449"]]},"DPPt":{"games":[["Diamond","#6baed6"],["Pearl","#e91e8c"],["Platinum","#7f8c8d"]]},"DP":{"games":[["Diamond","#6baed6"],["Pearl","#e91e8c"]]},"HGSS":{"games":[["HeartGold","#d4a017"],["SoulSilver","#7f8c8d"]]},"BW":{"games":[["Black","#2c3e50"],["White","#95a5a6"]]},"B2W2":{"games":[["Black 2","#1a5276"],["White 2","#aab7b8"]]},"XY":{"games":[["X","#2980b9"],["Y","#8e44ad"]]},"ORAS":{"games":[["Omega Ruby","#c0392b"],["Alpha Sapphire","#2471a3"]]},"SM":{"games":[["Sun","#e67e22"],["Moon","#6c3483"]]},"USUM":{"games":[["Ultra Sun","#d35400"],["Ultra Moon","#1a5276"]]},"LGPE":{"games":[["Let's Go Pikachu","#f1c40f"],["Let's Go Eevee","#e67e22"]]},"SwSh":{"games":[["Sword","#2980b9"],["Shield","#e74c3c"]]},"BDSP":{"games":[["Brilliant Diamond","#6baed6"],["Shining Pearl","#e91e8c"]]},"LA":{"games":[["Legends: Arceus","#1a6b8a"]]},"SV":{"games":[["Scarlet","#e74c3c"],["Violet","#6c3483"]]},"LZA":{"games":[["Legends: Z-A","#566573"]]}};
 
@@ -2968,6 +2964,13 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').catch(() => {});
   });
 }
+// iOS PWA: fixed-position buttons only get focus on first tap, click on second.
+// touchend fires immediately on first tap — preventDefault stops the ghost click.
+// These must run after the DOM elements exist (they're defined below this script block).
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('info-close').addEventListener('touchend', e => { e.preventDefault(); closeInfoPanel(); });
+  document.getElementById('info-overlay').addEventListener('touchend', e => { e.preventDefault(); closeInfoPanel(); });
+});
 </script>
 
 <!-- BW Dex Page -->
