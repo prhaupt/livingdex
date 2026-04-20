@@ -2720,7 +2720,20 @@ function renderDex(dexId) {
     if (cfg.sections && box.sk) {
       const secLabel = cfg.sections[box.sk];
       const boxNumInSection = box.n - Math.min(...boxes.filter(b => b.sk === box.sk).map(b => b.n)) + 1;
-      boxTitle = `${secLabel} — Box ${boxNumInSection}`;
+      // For species boxes on the main/shiny dex, show dex number range instead of box number
+      if (box.sk === 'species' && (dexId === 'dex' || dexId === 'shiny')) {
+        const speciesBoxes = boxes.filter(b => b.sk === 'species');
+        let startNum = 1;
+        for (const sb of speciesBoxes) {
+          if (sb.n === box.n) break;
+          startNum += sb.p.length;
+        }
+        const endNum = startNum + box.p.length - 1;
+        const pad = n => String(n).padStart(4, '0');
+        boxTitle = `${pad(startNum)} – ${pad(endNum)}`;
+      } else {
+        boxTitle = `${secLabel} — Box ${boxNumInSection}`;
+      }
     } else {
       boxTitle = `Box ${box.n}`;
     }
